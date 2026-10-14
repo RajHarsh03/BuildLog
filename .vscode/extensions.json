@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    // Tailwind CSS IntelliSense: class autocomplete + syntax support for
+    // Tailwind v4 at-rules (@theme, @apply) used in app/globals.css.
+    "bradlc.vscode-tailwindcss"
+  ]
+}
