@@ -231,7 +231,7 @@ export default async function HomePage() {
                   Get notified when I ship something new.
                 </h2>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-xl leading-relaxed">
-                  No spam, no marketing pitches — just engineering essays, deep postmortems, and open
+                  No spam, no marketing pitches - just engineering essays, deep postmortems, and open
                   source releases directly from my desk.
                 </p>
               </div>
