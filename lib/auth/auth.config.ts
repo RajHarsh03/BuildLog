@@ -26,8 +26,10 @@ export const authConfig = {
 
       if (isAdminRoute) {
         if (isLoggedIn) return true;
-        // Not logged in -> redirect to the sign-in page (preserving intent).
-        return false;
+        // Not logged in -> redirect to sign-in with an error flag.
+        return Response.redirect(
+          new URL("/login?error=Unauthorized", nextUrl),
+        );
       }
 
       // Logged-in users have no business on /login; send them to the dashboard.

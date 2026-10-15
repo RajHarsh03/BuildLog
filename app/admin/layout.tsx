@@ -7,7 +7,7 @@ import { AdminNav } from "@/components/admin/AdminNav";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: { default: "Admin", template: "%s — Admin" },
+  title: { default: "Admin", template: "%s - Admin" },
   robots: { index: false, follow: false },
 };
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const allowed = await requireAdmin();
-  if (!allowed) redirect("/login");
+  if (!allowed) redirect("/login?error=Unauthorized");
 
   const session = await auth();
 
