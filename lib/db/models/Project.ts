@@ -39,9 +39,18 @@ const ProjectSchema = new Schema<IProject>(
   { timestamps: true },
 );
 
-/** Convert a Mongoose document into a plain, JSON-safe Project object. */
-export function serializeProject(doc: ProjectDocument): Project {
-  const obj = doc.toObject({ virtuals: false });
+/**
+ * Convert a Mongoose document, or a `.lean()` plain object, into a plain
+ * JSON-safe Project object. Read paths use `.lean()`, so `toObject` is absent.
+ */
+export function serializeProject(
+  doc: ProjectDocument | IProject & { _id: unknown },
+): Project {
+  const obj = (
+    typeof (doc as ProjectDocument).toObject === "function"
+      ? (doc as ProjectDocument).toObject({ virtuals: false })
+      : doc
+  ) as IProject & { _id: unknown };
   return {
     _id: String(obj._id),
     name: obj.name,

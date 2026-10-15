@@ -49,9 +49,16 @@ const PostSchema = new Schema<IPost>(
 
 PostSchema.index({ title: "text", excerpt: "text", content: "text", tags: "text" });
 
-/** Convert a Mongoose document into a plain, JSON-safe Post object. */
-export function serializePost(doc: PostDocument): Post {
-  const obj = doc.toObject({ virtuals: false });
+/**
+ * Convert a Mongoose document, or a `.lean()` plain object, into a plain
+ * JSON-safe Post object. Read paths use `.lean()`, so `toObject` is absent.
+ */
+export function serializePost(doc: PostDocument | IPost & { _id: unknown }): Post {
+  const obj = (
+    typeof (doc as PostDocument).toObject === "function"
+      ? (doc as PostDocument).toObject({ virtuals: false })
+      : doc
+  ) as IPost & { _id: unknown };
   return {
     _id: String(obj._id),
     title: obj.title,
