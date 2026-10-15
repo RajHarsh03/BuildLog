@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { GitHubSignInButton } from "@/components/admin/GitHubSignInButton";
+import { LoginError } from "@/components/admin/LoginError";
 import { WORDMARK_URL } from "@/lib/utils";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="w-full max-w-md">
       <div className="bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[6px_6px_0px_0px_var(--color-ink)] p-8">
@@ -15,6 +22,8 @@ export default function LoginPage() {
             src={WORDMARK_URL}
           />
 
+          <LoginError error={error} />
+
           <div className="space-y-1.5">
             <h1 className="font-headline-md text-headline-md text-on-surface font-bold">
               Admin Access
@@ -25,18 +34,6 @@ export default function LoginPage() {
           </div>
 
           <GitHubSignInButton />
-
-          <div className="w-full pt-2 border-t border-surface-container-high">
-            <p className="font-mono-code text-label-sm text-on-surface-variant flex items-start gap-2 text-left">
-              <Icon name="info" size={16} className="mt-0.5 shrink-0" />
-              <span>
-                Requires <code className="font-bold">AUTH_GITHUB_ID</code>,{" "}
-                <code className="font-bold">AUTH_GITHUB_SECRET</code> and{" "}
-                <code className="font-bold">AUTH_SECRET</code> in{" "}
-                <code className="font-bold">.env.local</code>.
-              </span>
-            </p>
-          </div>
         </div>
       </div>
 
