@@ -4,10 +4,10 @@ import { getFeaturedProject } from "@/lib/content/projects";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   // Header shows the "NOW BUILDING" chip from the latest featured active project.
-  let nowBuilding = "AI CODE REVIEWER";
+  let nowBuilding = "AI Code Reviewer";
   try {
     const project = await getFeaturedProject();
-    if (project) nowBuilding = project.name.toUpperCase();
+    if (project) nowBuilding = project.name;
   } catch {
     // Public site must still render if the DB is unavailable.
   }

@@ -8,7 +8,7 @@ interface SiteHeaderProps {
   nowBuilding?: string;
 }
 
-export function SiteHeader({ nowBuilding = "AI CODE REVIEWER" }: SiteHeaderProps) {
+export function SiteHeader({ nowBuilding = "AI Code Reviewer" }: SiteHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b-2 border-[var(--color-ink)]">
       <div className="h-20 w-full px-5 sm:px-8 flex items-center justify-between gap-4">
@@ -32,7 +32,10 @@ export function SiteHeader({ nowBuilding = "AI CODE REVIEWER" }: SiteHeaderProps
               <span className="relative inline-flex rounded-full h-2 w-2 bg-mint" />
             </span>
             <span className="font-label-sm text-label-sm uppercase font-bold text-mint-ink tracking-wider">
-              NOW BUILDING: {nowBuilding}
+              Now building:
+            </span>
+            <span className="font-label-sm text-label-sm font-bold text-mint-ink">
+              {nowBuilding}
             </span>
           </div>
 
