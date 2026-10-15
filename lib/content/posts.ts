@@ -4,6 +4,7 @@ import { PostModel, serializePost, type IPost } from "@/lib/db/models/Post";
 import type { Post, PostSummary } from "@/types/post";
 import type { PostInput } from "@/schemas/post";
 import { slugify } from "@/lib/utils";
+import { clearFeaturedExcept } from "@/lib/content/featured";
 
 export const POSTS_PER_PAGE = 9;
 
@@ -104,6 +105,7 @@ export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
 
 export async function getFeaturedPost(): Promise<PostSummary | null> {
   await dbConnect();
+  // The starred post wins regardless of recency; drafts never surface publicly.
   const doc =
     (await PostModel.findOne({ status: "published", featured: true })
       .sort({ publishedAt: -1 })
@@ -167,10 +169,10 @@ export async function getTags(): Promise<{ name: string; count: number }[]> {
   return rows.map((r) => ({ name: r._id, count: r.count }));
 }
 
-/** Admin: all posts regardless of status, newest first. */
+/** Admin: all posts regardless of status, featured first then newest. */
 export async function getAllPostsAdmin(): Promise<PostSummary[]> {
   await dbConnect();
-  const docs = await PostModel.find({}).sort({ updatedAt: -1 }).lean();
+  const docs = await PostModel.find({}).sort({ featured: -1, updatedAt: -1 }).lean();
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
@@ -194,6 +196,10 @@ export async function createPost(input: PostInput): Promise<Post> {
     readingTime,
     publishedAt: input.status === "published" ? new Date() : undefined,
   } as Partial<IPost>);
+  // Only one post can be featured at a time.
+  if (input.featured === true) {
+    await clearFeaturedExcept("post", String(doc._id));
+  }
   return serializePost(doc);
 }
 
@@ -213,6 +219,10 @@ export async function updatePost(id: string, input: Partial<PostInput>): Promise
     patch.publishedAt = new Date();
   }
   const doc = await PostModel.findByIdAndUpdate(id, patch, { new: true });
+  // Only one post can be featured at a time.
+  if (input.featured === true) {
+    await clearFeaturedExcept("post", id);
+  }
   return doc ? serializePost(doc) : null;
 }
 

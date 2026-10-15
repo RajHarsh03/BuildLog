@@ -3,6 +3,7 @@ import { ProjectModel, serializeProject, type IProject } from "@/lib/db/models/P
 import type { Project, ProjectSummary, ProjectStatus } from "@/types/project";
 import type { ProjectInput } from "@/schemas/project";
 import { slugify } from "@/lib/utils";
+import { clearFeaturedExcept } from "@/lib/content/featured";
 
 function toSummary(project: Project): ProjectSummary {
   const { content: _content, ...rest } = project;
@@ -50,8 +51,10 @@ export async function searchProjects(q: string, limit = 5): Promise<ProjectSumma
 
 export async function getFeaturedProject(): Promise<ProjectSummary | null> {
   await dbConnect();
+  // The starred project wins regardless of status (spotlight follows the star);
+  // otherwise fall back to the most recently updated active project.
   const doc =
-    (await ProjectModel.findOne({ status: "active", featured: true })
+    (await ProjectModel.findOne({ featured: true })
       .sort({ updatedAt: -1 })
       .lean()) || (await ProjectModel.findOne({ status: "active" }).sort({ updatedAt: -1 }).lean());
   return doc ? toSummary(serializeProject(doc as never)) : null;
@@ -71,7 +74,7 @@ export async function getProjectById(id: string): Promise<Project | null> {
 
 export async function getAllProjectsAdmin(): Promise<ProjectSummary[]> {
   await dbConnect();
-  const docs = await ProjectModel.find({}).sort({ updatedAt: -1 }).lean();
+  const docs = await ProjectModel.find({}).sort({ featured: -1, updatedAt: -1 }).lean();
   return docs.map((d) => toSummary(serializeProject(d as never)));
 }
 
@@ -92,6 +95,10 @@ export async function createProject(input: ProjectInput): Promise<Project> {
   await dbConnect();
   const slug = await uniqueSlug(input.name);
   const doc = await ProjectModel.create({ ...input, slug } as Partial<IProject>);
+  // Only one project can be featured at a time.
+  if (input.featured) {
+    await clearFeaturedExcept("project", String(doc._id));
+  }
   return serializeProject(doc);
 }
 
@@ -107,6 +114,10 @@ export async function updateProject(
     patch.slug = await uniqueSlug(input.name, id);
   }
   const doc = await ProjectModel.findByIdAndUpdate(id, patch, { new: true });
+  // Only one project can be featured at a time.
+  if (input.featured === true) {
+    await clearFeaturedExcept("project", id);
+  }
   return doc ? serializeProject(doc) : null;
 }
 
