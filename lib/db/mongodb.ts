@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
 /**
  * Cache the connection across hot reloads so `next dev` does not open a new
  * connection on every request.
@@ -22,7 +20,10 @@ if (!global._mongooseCache) {
 }
 
 export async function dbConnect(): Promise<typeof mongoose> {
-  if (!MONGODB_URI) {
+  // Read lazily: scripts load .env.local after this module is imported, so a
+  // top-level capture would permanently freeze the value as undefined.
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
     throw new Error(
       "MONGODB_URI is not set. Copy .env.example to .env.local and add your connection string.",
     );
@@ -31,7 +32,7 @@ export async function dbConnect(): Promise<typeof mongoose> {
 
   if (!cached.promise) {
     cached.promise = mongoose
-      .connect(MONGODB_URI, { bufferCommands: false })
+      .connect(uri, { bufferCommands: false })
       .then((m) => m);
   }
 
