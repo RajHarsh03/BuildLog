@@ -22,14 +22,14 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "BuildLog — Build. Learn. Document.",
-    template: "%s — BuildLog",
+    default: "BuildLog - Build. Learn. Document.",
+    template: "%s - BuildLog",
   },
   description:
     "Personal engineering notes, architectural experiments, and field learnings from a solo developer. Build. Learn. Document.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   openGraph: {
-    title: "BuildLog — Build. Learn. Document.",
+    title: "BuildLog - Build. Learn. Document.",
     description:
       "A personal developer journal documenting what I build, what I learn, and the problems I solve.",
     type: "website",
@@ -47,10 +47,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <script
-          // Apply the saved theme before first paint so dark mode survives
-          // reloads with no flash of the wrong theme.
+          // Apply the saved theme before first paint. Default is light; only
+          // switch to dark if the user explicitly chose it previously.
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem("buildlog-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}`,
+            __html: `try{var t=localStorage.getItem("buildlog-theme");if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}`,
           }}
         />
         <link
