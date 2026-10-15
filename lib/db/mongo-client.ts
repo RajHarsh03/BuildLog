@@ -1,17 +1,14 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI ?? "";
-const options = {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: false,
-    deprecationErrors: false,
-  },
-};
 
 /**
  * Separate MongoClient (from the `mongodb` driver) used by the Auth.js
  * MongoDB adapter. Mongoose uses its own connection in ./mongodb.
+ *
+ * NOTE: we intentionally do NOT pass a `serverApi` option here. Forcing
+ * Server API v1 causes the driver to attempt SCRAM-SHA-1 auth, which fails
+ * against Atlas users created with SCRAM-SHA-256 (the current default).
  */
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -31,12 +28,12 @@ if (!uri) {
   clientPromise.catch(() => {});
 } else if (process.env.NODE_ENV === "development") {
   if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
+    client = new MongoClient(uri);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  client = new MongoClient(uri, options);
+  client = new MongoClient(uri);
   clientPromise = client.connect();
 }
 
