@@ -62,6 +62,7 @@ export function PostRowActions({ id, status, featured }: PostRowActionsProps) {
       >
         <Icon
           name={featured ? "star" : "star_border"}
+          fill={featured}
           size={18}
           className={featured ? "text-[#92400E]" : undefined}
         />

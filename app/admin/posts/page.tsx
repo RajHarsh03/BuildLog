@@ -100,7 +100,7 @@ export default async function AdminPostsPage({
                       {post.title}
                     </h2>
                     {post.featured && (
-                      <Icon name="star" size={16} className="text-[#92400E] shrink-0" />
+                      <Icon name="star" fill size={16} className="text-[#92400E] shrink-0" />
                     )}
                   </div>
                   <div className="font-mono-code text-label-sm text-on-surface-variant mt-1 flex flex-wrap items-center gap-x-2">

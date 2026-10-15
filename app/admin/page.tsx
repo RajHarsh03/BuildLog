@@ -165,7 +165,7 @@ export default async function AdminDashboardPage() {
                     </div>
                     <div className="shrink-0 flex items-center gap-2">
                       {post.featured && (
-                        <Icon name="star" size={16} className="text-[#92400E]" />
+                        <Icon name="star" fill size={16} className="text-[#92400E]" />
                       )}
                       <StatusBadge status={post.status} pulse={false} />
                     </div>
@@ -211,7 +211,7 @@ export default async function AdminDashboardPage() {
             </h2>
             <p className="font-body-sm text-body-sm text-mint-ink leading-relaxed">
               Write posts in MDX. Fenced code blocks are highlighted with Shiki and
-              wrapped in the terminal window automatically — the editor preview shows
+              wrapped in the terminal window automatically - the editor preview shows
               exactly what readers will see.
             </p>
           </div>
