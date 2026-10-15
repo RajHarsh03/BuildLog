@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ProjectsBrowser } from "@/components/projects/ProjectsBrowser";
 import { getProjects, getProjectStatusCounts } from "@/lib/content/projects";
 import { absoluteUrl, author } from "@/lib/utils";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: absoluteUrl("/projects") },
   openGraph: {
-    title: "Projects — BuildLog",
+    title: "Projects - BuildLog",
     description: DESCRIPTION,
     url: absoluteUrl("/projects"),
     type: "website",
@@ -33,13 +34,7 @@ export default async function ProjectsPage() {
       <div className="flex flex-col w-full">
         {/* Breadcrumb & editorial header */}
         <header className="w-full mb-10">
-          <div className="flex items-center gap-2 font-mono-code text-label-sm uppercase tracking-wider text-on-surface-variant mb-2">
-            <Link className="hover:text-primary transition-colors" href="/">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-primary font-bold">Projects</span>
-          </div>
+          <Breadcrumbs items={[{ label: "Projects" }]} className="mb-2" />
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6">
             <div className="max-w-3xl">
               <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight mb-1">

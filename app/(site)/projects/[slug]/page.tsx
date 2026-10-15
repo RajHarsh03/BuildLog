@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { renderMdx } from "@/lib/mdx/render";
 import { getProjectBySlug } from "@/lib/content/projects";
@@ -48,21 +49,9 @@ export default async function ProjectPage({ params }: { params: Params }) {
       <div className="flex flex-col w-full">
         {/* Header */}
         <header className="w-full pb-8 mb-10 border-b-2 border-on-surface space-y-6">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex items-center gap-2 font-mono-code text-mono-code text-on-surface-variant"
-          >
-            <Link className="hover:text-primary transition-colors flex items-center gap-1" href="/">
-              <Icon name="home" size={16} />
-              <span>Home</span>
-            </Link>
-            <span className="text-outline">/</span>
-            <Link className="hover:text-primary transition-colors" href="/projects">
-              Projects
-            </Link>
-            <span className="text-outline">/</span>
-            <span className="text-on-surface font-semibold">{project.name}</span>
-          </nav>
+          <Breadcrumbs
+            items={[{ label: "Projects", href: "/projects" }, { label: project.name }]}
+          />
 
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={project.status} label={project.status} />

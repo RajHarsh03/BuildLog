@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getFeaturedProject } from "@/lib/content/projects";
 import { getPostStats } from "@/lib/content/posts";
@@ -8,14 +9,14 @@ import { absoluteUrl, author } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const DESCRIPTION = `About ${author.name} — ${author.role}. The person behind BuildLog.`;
+const DESCRIPTION = `About ${author.name} - ${author.role}. The person behind BuildLog.`;
 
 export const metadata: Metadata = {
   title: "About",
   description: DESCRIPTION,
   alternates: { canonical: absoluteUrl("/about") },
   openGraph: {
-    title: `About ${author.name} — BuildLog`,
+    title: `About ${author.name} - BuildLog`,
     description: DESCRIPTION,
     url: absoluteUrl("/about"),
     type: "profile",
@@ -87,19 +88,7 @@ export default async function AboutPage() {
         {/* Intro */}
         <header className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-6">
-            <nav
-              aria-label="Breadcrumb"
-              className="flex items-center gap-2 font-mono-code text-mono-code text-on-surface-variant"
-            >
-              <Link className="hover:text-primary transition-colors flex items-center gap-1" href="/">
-                <Icon name="home" size={16} />
-                <span>Home</span>
-              </Link>
-              <span className="text-outline">/</span>
-              <span className="text-on-surface font-semibold bg-surface-container px-2 py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)]">
-                About
-              </span>
-            </nav>
+            <Breadcrumbs items={[{ label: "About" }]} />
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-lowest border-2 border-on-surface shadow-[2px_2px_0px_0px_var(--color-ink)] rounded">
               <span className="w-2 h-2 rounded-full bg-primary-container" />
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-bold">

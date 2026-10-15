@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { FontSizeToggle } from "@/components/blog/FontSizeToggle";
 import { CopyLink } from "@/components/blog/CopyLink";
@@ -96,21 +97,16 @@ export default async function ArticlePage({ params }: { params: Params }) {
         {/* Header */}
         <header className="w-full pb-8 mb-10 border-b-2 border-on-surface">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <nav
-              aria-label="Breadcrumb"
-              className="flex items-center gap-2 font-mono-code text-mono-code text-on-surface-variant"
-            >
-              <Link className="hover:text-primary transition-colors" href="/articles">
-                Articles
-              </Link>
-              <span className="text-outline">/</span>
-              <Link
-                className="hover:text-primary transition-colors"
-                href={`/articles?category=${encodeURIComponent(post.category)}`}
-              >
-                {post.category}
-              </Link>
-            </nav>
+            <Breadcrumbs
+              items={[
+                { label: "Articles", href: "/articles" },
+                {
+                  label: post.category,
+                  href: `/articles?category=${encodeURIComponent(post.category)}`,
+                },
+                { label: post.title },
+              ]}
+            />
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm uppercase tracking-wider rounded-lg border-2 border-on-surface shadow-[2px_2px_0px_0px_var(--color-ink)]">
                 <span className="w-2 h-2 rounded-full bg-tertiary" />

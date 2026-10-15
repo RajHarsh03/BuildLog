@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { ArticleFilters } from "@/components/blog/ArticleFilters";
 import { Pagination } from "@/components/blog/Pagination";
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: absoluteUrl("/articles") },
   openGraph: {
-    title: "Articles — BuildLog",
+    title: "Articles - BuildLog",
     description: DESCRIPTION,
     url: absoluteUrl("/articles"),
     type: "website",
@@ -72,19 +72,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
         {/* Archive header */}
         <header className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <nav
-              aria-label="Breadcrumb"
-              className="flex items-center gap-2 font-mono-code text-mono-code text-on-surface-variant"
-            >
-              <Link className="hover:text-primary transition-colors flex items-center gap-1" href="/">
-                <Icon name="home" size={16} />
-                <span>Home</span>
-              </Link>
-              <span className="text-outline">/</span>
-              <span className="text-on-surface font-semibold bg-surface-container px-2 py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)]">
-                Articles
-              </span>
-            </nav>
+            <Breadcrumbs items={[{ label: "Articles" }]} />
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-lowest border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_var(--color-ink)] rounded">
               <Icon name="history_edu" size={16} className="text-primary" />
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface">
