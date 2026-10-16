@@ -84,12 +84,13 @@ export function ArticleFilters({ categories, tags, totalCount }: ArticleFiltersP
           />
         </form>
 
-        {/* Category / tag / sort dropdowns */}
-        <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+        {/* Category / tag / sort dropdowns: mobile = category full row, tags+sort share a row; desktop = inline right */}
+        <div className="grid w-full grid-cols-2 gap-2 items-center sm:flex sm:flex-wrap sm:w-auto lg:ml-auto">
           <Dropdown
             ariaLabel="Filter by category"
             value={activeCategory}
             active={activeCategory !== "all"}
+            className="col-span-2 sm:col-auto"
             options={[
               { value: "all", label: "All Categories", count: totalCount },
               ...categories.map((c) => ({ value: c.name, label: c.name, count: c.count })),
@@ -100,6 +101,7 @@ export function ArticleFilters({ categories, tags, totalCount }: ArticleFiltersP
             ariaLabel="Filter by tag"
             value={activeTag || "all"}
             active={activeTag !== ""}
+            className="col-span-1 sm:col-auto"
             options={[
               { value: "all", label: "All Tags" },
               ...tags.map((t) => ({ value: t.name, label: `#${t.name}`, count: t.count })),
@@ -110,6 +112,7 @@ export function ArticleFilters({ categories, tags, totalCount }: ArticleFiltersP
             ariaLabel="Sort articles"
             value={activeSort}
             active={activeSort !== "newest"}
+            className="col-span-1 sm:col-auto"
             options={[
               { value: "newest", label: "Newest First" },
               { value: "oldest", label: "Oldest First" },
@@ -119,7 +122,7 @@ export function ArticleFilters({ categories, tags, totalCount }: ArticleFiltersP
           />
           {activeCount > 0 && (
             <button
-              className="inline-flex items-center gap-1 px-3 py-2 font-mono-code text-label-sm font-bold text-on-surface-variant hover:text-primary border-2 border-transparent hover:border-[var(--color-ink)] rounded transition-all"
+              className="col-span-2 sm:col-auto inline-flex items-center justify-center gap-1 px-3 py-2 font-mono-code text-label-sm font-bold text-on-surface-variant hover:text-primary border-2 border-transparent rounded transition-colors"
               type="button"
               onClick={resetAll}
             >
@@ -141,12 +144,14 @@ function Dropdown({
   options,
   active,
   onChange,
+  className,
 }: {
   ariaLabel: string;
   value: string;
   options: Opt[];
   active: boolean;
   onChange: (value: string) => void;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -172,12 +177,12 @@ function Dropdown({
   const optionText = (o: Opt) => (o.count != null ? `${o.label} (${o.count})` : o.label);
 
   return (
-    <div className="relative" ref={rootRef}>
+    <div className={cn("relative w-full sm:w-auto", className)} ref={rootRef}>
       <button
         aria-expanded={open}
         aria-label={ariaLabel}
         className={cn(
-          "inline-flex items-center gap-1.5 pl-3 pr-2.5 py-2 font-mono-code text-[13px] border-2 border-[var(--color-ink)] rounded shadow-[2px_2px_0px_var(--color-ink)] transition-all cursor-pointer",
+          "inline-flex w-full items-center justify-between gap-1.5 pl-3 pr-2.5 py-2 font-mono-code text-[13px] border-2 border-[var(--color-ink)] rounded shadow-[2px_2px_0px_var(--color-ink)] transition-all cursor-pointer",
           active
             ? "bg-primary text-on-primary font-bold"
             : "bg-surface-container-lowest text-on-surface font-semibold hover:bg-surface-container",
