@@ -12,8 +12,8 @@ const NAV = [
 const FEEDS = [
   { href: "https://github.com/RajHarsh03", label: "GitHub", icon: "arrow_outward" },
   { href: "https://www.linkedin.com/in/rajharsh03", label: "LinkedIn", icon: "arrow_outward" },
-  { href: "mailto:rajharsh.devx@gmail.com", label: "Email Logbook", icon: "mail" },
-  { href: "https://github.com/RajHarsh03/BuildLog", label: "Source Code", icon: "code_blocks" },
+  { href: "mailto:rajharsh.devx@gmail.com", label: "Email", icon: "mail" },
+  { href: "https://twitter.com/RajHarsh03", label: "Twitter", icon: "alternate_email" },
 ];
 
 export function SiteFooter() {
@@ -84,17 +84,21 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-label-sm text-label-sm">
-          <div className="flex items-center gap-2 text-on-surface-variant">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mint opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-mint" />
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 font-label-sm text-[10px] sm:text-label-sm">
+          <div className="flex items-center gap-2 text-on-surface-variant whitespace-nowrap w-full sm:w-auto justify-between sm:justify-start">
+            <span className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mint opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-mint" />
+              </span>
+              <span className="text-on-surface font-semibold">All systems operational</span>
             </span>
-            <span className="text-on-surface font-semibold">All systems operational</span>
-            <span className="text-[var(--color-ink)]">•</span>
-            <span>Kolkata, IN</span>
+            <span className="flex items-center gap-2">
+              <span className="text-[var(--color-ink)]">•</span>
+              <span>Kolkata, IN</span>
+            </span>
           </div>
-          <div className="text-on-surface-variant font-mono-code">
+          <div className="text-on-surface-variant font-mono-code whitespace-nowrap">
             © {new Date().getFullYear()} BuildLog. Handcrafted under MIT License.
           </div>
         </div>
