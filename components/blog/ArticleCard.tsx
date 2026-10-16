@@ -11,7 +11,7 @@ export function ArticleCard({ post }: { post: PostSummary }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2 border-b-2 border-[var(--color-ink)]/10 pb-3">
           <Badge tone={toneForCategory(post.category)}>{post.category}</Badge>
-          <span className="font-mono-code text-[12px] text-on-surface-variant">
+          <span className="font-mono-code text-[11px] text-on-surface-variant whitespace-nowrap shrink-0">
             {post.readingTime} min read
           </span>
         </div>
