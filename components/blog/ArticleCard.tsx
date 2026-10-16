@@ -51,7 +51,7 @@ export function ArticleCard({ post }: { post: PostSummary }) {
             <span>Read Article</span>
             <Icon name="arrow_forward" size={18} />
           </Link>
-          <CopyLink compact url={absoluteUrl(`/articles/${post.slug}`)} />
+          <CopyLink compact url={absoluteUrl(`/articles/${post.slug}`)} title={post.title} />
         </div>
       </div>
     </article>

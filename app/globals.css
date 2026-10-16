@@ -234,6 +234,20 @@
 }
 
 @layer utilities {
+  /* Share toast: slide-up + fade entrance (CopyLink). */
+  .toast-in {
+    animation: toast-in 220ms ease-out;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   .scrollbar-none {
     scrollbar-width: none;
   }

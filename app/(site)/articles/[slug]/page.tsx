@@ -5,6 +5,7 @@ import { Icon } from "@/components/shared/Icon";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { FontSizeToggle } from "@/components/blog/FontSizeToggle";
+import { ViewTracker } from "@/components/blog/ViewTracker";
 import { CopyLink } from "@/components/blog/CopyLink";
 import { renderMdx } from "@/lib/mdx/render";
 import {
@@ -141,9 +142,28 @@ export default async function ArticlePage({ params }: { params: Params }) {
           <h1 className="font-headline-lg text-headline-lg-mobile md:text-[46px] md:leading-[54px] text-on-surface font-semibold tracking-tight max-w-4xl mb-4">
             {post.title}
           </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-3xl leading-relaxed mb-8">
+
+          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-3xl leading-relaxed mb-6">
             {post.excerpt}
           </p>
+
+          {/* Tags row - under the excerpt, links into the tag filter */}
+          {post.tags.length > 0 && (
+            <div className="mb-8 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-[22px] h-[22px] text-on-surface-variant">
+                <Icon name="label" size={17} />
+              </span>
+              {post.tags.map((t) => (
+                <Link
+                  key={t}
+                  className="px-2 py-0.5 bg-surface-container-lowest border border-on-surface rounded font-mono-code text-[11px] text-on-surface hover:text-primary hover:border-primary transition-colors"
+                  href={`/articles?tag=${encodeURIComponent(t)}`}
+                >
+                  {t}
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
             <div className="flex flex-wrap items-center gap-y-2 gap-x-4 font-mono-code text-mono-code text-on-surface-variant">
@@ -162,10 +182,11 @@ export default async function ArticlePage({ params }: { params: Params }) {
               <span>{post.readingTime} min read</span>
               <span className="text-outline">•</span>
               <span>{words.toLocaleString()} words</span>
+              <ViewTracker postId={post._id} initial={post.views} />
             </div>
             <div className="flex items-center gap-2 self-start lg:self-auto">
               <FontSizeToggle />
-              <CopyLink url={url} />
+              <CopyLink url={url} title={post.title} />
             </div>
           </div>
         </header>
