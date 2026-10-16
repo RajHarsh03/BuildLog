@@ -4,7 +4,7 @@
   "private": true,
   "description": "BuildLog — a personal developer journal. Build. Learn. Document.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
