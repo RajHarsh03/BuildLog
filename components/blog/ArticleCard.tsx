@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
+import { CopyLink } from "@/components/blog/CopyLink";
 import { Badge, toneForCategory } from "@/components/ui/Badge";
 import type { PostSummary } from "@/types/post";
-import { formatDate } from "@/lib/utils";
+import { absoluteUrl, formatDate } from "@/lib/utils";
 
 export function ArticleCard({ post }: { post: PostSummary }) {
   return (
@@ -42,13 +43,16 @@ export function ArticleCard({ post }: { post: PostSummary }) {
             </span>
           ))}
         </div>
-        <Link
-          className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-primary group-hover:translate-x-1 transition-transform"
-          href={`/articles/${post.slug}`}
-        >
-          <span>Read Article</span>
-          <Icon name="arrow_forward" size={18} />
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-primary group-hover:translate-x-1 transition-transform"
+            href={`/articles/${post.slug}`}
+          >
+            <span>Read Article</span>
+            <Icon name="arrow_forward" size={18} />
+          </Link>
+          <CopyLink compact url={absoluteUrl(`/articles/${post.slug}`)} />
+        </div>
       </div>
     </article>
   );
