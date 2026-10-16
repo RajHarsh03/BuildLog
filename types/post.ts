@@ -13,6 +13,8 @@ export interface Post {
   status: PostStatus;
   featured: boolean;
   readingTime: number;
+  /** Lifetime page views, incremented per public article page load. */
+  views: number;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;

@@ -313,6 +313,26 @@ export async function updatePost(id: string, input: Partial<PostInput>): Promise
   return doc ? serializePost(doc) : null;
 }
 
+/** Read-only view count (no bump) - used for revisits inside the cooldown. */
+export async function getPostViews(id: string): Promise<number | null> {
+  await dbConnect();
+  const doc = await PostModel.findById(id).select("views").lean();
+  return doc ? (doc.views ?? 0) : null;
+}
+
+/** Atomic per-visitor view bump; returns the fresh count. Deliberately does
+ * NOT revalidate caches - the live number is streamed to the reader by the
+ * ViewTracker client component, so a hot post never triggers rebuild storms. */
+export async function incrementPostViews(id: string): Promise<number | null> {
+  await dbConnect();
+  const doc = await PostModel.findByIdAndUpdate(
+    id,
+    { $inc: { views: 1 } },
+    { new: true, timestamps: false },
+  ).lean();
+  return doc ? (doc.views ?? 0) : null;
+}
+
 export async function deletePost(id: string): Promise<boolean> {
   await dbConnect();
   const res = await PostModel.findByIdAndDelete(id);

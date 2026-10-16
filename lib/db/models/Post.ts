@@ -12,6 +12,7 @@ export interface IPost {
   status: PostStatus;
   featured: boolean;
   readingTime: number;
+  views: number;
   publishedAt?: Date;
   seoTitle?: string;
   seoDescription?: string;
@@ -39,6 +40,7 @@ const PostSchema = new Schema<IPost>(
     },
     featured: { type: Boolean, default: false },
     readingTime: { type: Number, default: 1 },
+    views: { type: Number, default: 0, min: 0 },
     publishedAt: { type: Date, index: true },
     seoTitle: { type: String },
     seoDescription: { type: String },
@@ -71,6 +73,7 @@ export function serializePost(doc: PostDocument | IPost & { _id: unknown }): Pos
     status: obj.status,
     featured: obj.featured ?? false,
     readingTime: obj.readingTime ?? 1,
+    views: obj.views ?? 0,
     publishedAt: obj.publishedAt ? new Date(obj.publishedAt).toISOString() : undefined,
     createdAt: new Date(obj.createdAt).toISOString(),
     updatedAt: new Date(obj.updatedAt).toISOString(),
