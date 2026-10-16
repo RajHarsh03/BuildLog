@@ -215,7 +215,7 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* SECTION 4: NEWSLETTER / RSS CALLOUT */}
+        {/* SECTION 4: NEWSLETTER CALLOUT */}
         <section className="w-full">
           <div className="bg-paper border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-10 relative overflow-hidden">
             <div className="flex items-center justify-between border-b-2 border-on-surface pb-4 mb-6">

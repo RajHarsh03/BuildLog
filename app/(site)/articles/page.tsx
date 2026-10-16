@@ -5,7 +5,6 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { ArticleFilters } from "@/components/blog/ArticleFilters";
 import { Pagination } from "@/components/blog/Pagination";
-import { RssCallout } from "@/components/blog/RssCallout";
 import {
   getPublishedPosts,
   getCategories,
@@ -164,8 +163,6 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
           perPage={result.perPage}
           query={query}
         />
-
-        <RssCallout />
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ const NAV = [
 const FEEDS = [
   { href: "https://github.com/RajHarsh03", label: "GitHub", icon: "arrow_outward" },
   { href: "https://www.linkedin.com/in/rajharsh03", label: "LinkedIn", icon: "arrow_outward" },
-  { href: "/articles#rss", label: "RSS Feed", icon: "rss_feed" },
   { href: "mailto:rajharsh.devx@gmail.com", label: "Email Logbook", icon: "mail" },
   { href: "https://github.com/RajHarsh03/BuildLog", label: "Source Code", icon: "code_blocks" },
 ];
