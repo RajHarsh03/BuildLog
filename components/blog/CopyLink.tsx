@@ -49,7 +49,7 @@ export function CopyLink({
       ? createPortal(
           <div
             role="status"
-            className="toast-in fixed bottom-6 right-6 z-50 max-w-sm p-4 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)]"
+            className="toast-in fixed bottom-24 right-6 z-50 max-w-sm p-4 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)]"
           >
             <div className="flex items-center gap-2 font-headline-sm text-headline-sm font-bold text-on-surface">
               <Icon name="check_circle" size={18} className="text-tertiary-container" />
