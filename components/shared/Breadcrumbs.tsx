@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 
 /** Rounded, thick-stroke house glyph (matches the reference icon style). */
-function HomeIcon({ size = 18 }: { size?: number }) {
+function HomeIcon({ size = 15 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -43,10 +43,10 @@ export function Breadcrumbs({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={`flex flex-wrap items-center gap-2 font-mono-code text-mono-code text-on-surface-variant ${className ?? ""}`}
+      className={`flex flex-wrap items-center gap-x-1.5 gap-y-2 sm:gap-2 font-mono-code text-[10px] sm:text-mono-code text-on-surface-variant ${className ?? ""}`}
     >
       <Link
-        className="hover:text-primary transition-colors flex items-center gap-1.5"
+        className="hover:text-primary transition-colors flex items-center gap-1.5 shrink-0"
         href="/"
       >
         <HomeIcon />
@@ -54,13 +54,13 @@ export function Breadcrumbs({
       </Link>
       {items.map((item, i) => (
         <Fragment key={`${item.label}-${i}`}>
-          <span className="text-outline">/</span>
+          <span className="text-outline shrink-0">/</span>
           {item.href ? (
-            <Link className="hover:text-primary transition-colors" href={item.href}>
+            <Link className="hover:text-primary transition-colors shrink-0" href={item.href}>
               {item.label}
             </Link>
           ) : (
-            <span className="text-on-surface font-semibold bg-surface-container px-2 py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)]">
+            <span className="text-on-surface font-semibold bg-surface-container px-1.5 sm:px-2 py-px sm:py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)] min-w-0 max-w-full whitespace-normal break-words text-left">
               {item.label}
             </span>
           )}
