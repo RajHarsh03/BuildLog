@@ -92,31 +92,6 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
               .
             </p>
           </div>
-          <div className="w-full bg-surface-container-lowest border-2 border-[var(--color-ink)] shadow-[4px_4px_0px_var(--color-ink)] rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3 sm:gap-6 font-mono-code text-mono-code text-on-surface">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
-                <span className="font-bold">{totalCount}</span>
-                <span className="text-on-surface-variant">Technical Articles</span>
-              </div>
-              <span className="hidden sm:inline text-outline">•</span>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-secondary inline-block" />
-                <span className="font-bold">{categories.length}</span>
-                <span className="text-on-surface-variant">Categories</span>
-              </div>
-              <span className="hidden sm:inline text-outline">•</span>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-tertiary-container inline-block" />
-                <span className="font-bold">{tags.length}</span>
-                <span className="text-on-surface-variant">Tags</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-label-sm text-label-sm uppercase bg-[#FEF3C7] text-[#92400E] px-2.5 py-1 rounded border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_var(--color-ink)]">
-              <Icon name="filter_alt" size={15} />
-              <span>Filterable by tag &amp; category</span>
-            </div>
-          </div>
         </header>
 
         {/* Search + filters (client) */}

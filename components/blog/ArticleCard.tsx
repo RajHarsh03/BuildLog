@@ -3,7 +3,7 @@ import { Icon } from "@/components/shared/Icon";
 import { CopyLink } from "@/components/blog/CopyLink";
 import { Badge, toneForCategory } from "@/components/ui/Badge";
 import type { PostSummary } from "@/types/post";
-import { absoluteUrl, formatDate } from "@/lib/utils";
+import { absoluteUrl, author, formatDate } from "@/lib/utils";
 
 export function ArticleCard({ post }: { post: PostSummary }) {
   return (
@@ -33,25 +33,46 @@ export function ArticleCard({ post }: { post: PostSummary }) {
         </p>
       </div>
       <div className="pt-6 mt-6 border-t-2 border-[var(--color-ink)]/10 space-y-4">
-        <div className="flex flex-wrap gap-1.5">
-          {post.tags.map((tag) => (
-            <span
-              key={tag}
-              className="font-mono-code text-[11px] px-2 py-0.5 bg-surface-container text-on-surface rounded border border-[var(--color-ink)]"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {post.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="font-mono-code text-[10px] px-1.5 py-px bg-surface-container text-on-surface rounded border border-[var(--color-ink)]"
+              >
+                {tag}
+              </span>
+            ))}
+            {post.tags.length > 3 && (
+              <span className="font-mono-code text-[10px] px-1.5 py-px text-on-surface-variant rounded border border-[var(--color-ink)]/40">
+                +{post.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+        {/* Author line */}
         <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt={`${author.name} avatar`}
+              className="w-9 h-9 rounded-full border-2 border-[var(--color-ink)] object-cover shrink-0"
+              src={author.avatar}
+            />
+            <span className="font-mono-code text-[14px] text-on-surface font-bold truncate">
+              {author.name}
+            </span>
+          </div>
+          <CopyLink compact url={absoluteUrl(`/articles/${post.slug}`)} title={post.title} />
+        </div>
+        <div>
           <Link
-            className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-primary group-hover:translate-x-1 transition-transform"
+            className="flex w-full items-center justify-end gap-1.5 font-mono-code text-mono-code font-bold text-primary hover:text-on-surface transition-colors"
             href={`/articles/${post.slug}`}
           >
             <span>Read Article</span>
-            <Icon name="arrow_forward" size={18} />
+            <Icon name="arrow_forward" size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <CopyLink compact url={absoluteUrl(`/articles/${post.slug}`)} title={post.title} />
         </div>
       </div>
     </article>
