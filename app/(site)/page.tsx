@@ -17,17 +17,18 @@ export default async function HomePage() {
   // Public site must render even if the DB is unavailable; degrade gracefully.
   const [featured, latest, stats, project, allProjects] = await Promise.all([
     getFeaturedPost().catch(() => null),
-    getLatestPosts(3).catch(() => []),
+    getLatestPosts(4).catch(() => []),
     getPostStats().catch(() => ({ total: 0, published: 0, drafts: 0 })),
     getFeaturedProject().catch(() => null),
     getProjects("all").catch(() => []),
   ]);
 
-  const gridPosts = featured ? latest.filter((p) => p._id !== featured._id) : latest;
+  // Featured gets its own hero card; the grid below always shows 3 others.
+  const gridPosts = (featured ? latest.filter((p) => p._id !== featured._id) : latest).slice(0, 3);
   // Recent projects strip: skip the one already showcased in "Currently Building".
   const recentProjects = allProjects
     .filter((p) => !project || p._id !== project._id)
-    .slice(0, 3);
+    .slice(0, 2);
 
   return (
     <div className="w-full px-5 sm:px-8 py-8 overflow-x-clip">
@@ -244,7 +245,8 @@ export default async function HomePage() {
                 <Icon name="arrow_forward" size={18} />
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Same 12-col grid as the projects page; ProjectCard spans 6 each. */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {recentProjects.map((p) => (
                 <ProjectCard key={p._id} project={p} />
               ))}
