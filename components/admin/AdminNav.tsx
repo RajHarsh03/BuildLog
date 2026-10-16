@@ -136,9 +136,9 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
         </div>
       </div>
 
-      {/* Compact mobile nav - mirrors the public header's mobile row */}
-      <div className="md:hidden border-t-2 border-[var(--color-ink)] bg-paper px-4 py-2 overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-2 font-mono-code text-mono-code whitespace-nowrap">
+      {/* Compact mobile nav - equal-width grid, always fits (mirrors public header) */}
+      <div className="md:hidden border-t-2 border-[var(--color-ink)] bg-paper px-3 py-2">
+        <nav aria-label="Admin mobile" className="grid grid-cols-4 gap-1.5 font-mono-code text-[12px]">
           {LINKS.map((l) => {
             const active = isActive(l.href, l.exact);
             return (
@@ -146,17 +146,17 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
                 key={l.href}
                 href={l.href}
                 className={clsx(
-                  "px-3 py-1 rounded border-2 border-[var(--color-ink)]",
+                  "px-1 py-1 text-center rounded border-2 border-[var(--color-ink)] overflow-hidden text-ellipsis whitespace-nowrap",
                   active
                     ? "bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0px_0px_var(--color-ink)]"
-                    : "bg-surface-container-lowest",
+                    : "bg-surface-container-lowest text-on-surface",
                 )}
               >
                 {l.label}
               </Link>
             );
           })}
-        </div>
+        </nav>
       </div>
     </header>
   );

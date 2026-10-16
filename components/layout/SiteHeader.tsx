@@ -53,9 +53,12 @@ export function SiteHeader({ nowBuilding = "AI Code Reviewer" }: SiteHeaderProps
         </div>
       </div>
 
-      {/* Compact mobile nav */}
-      <div className="md:hidden border-t-2 border-[var(--color-ink)] bg-paper px-4 py-2 overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-2 font-mono-code text-mono-code whitespace-nowrap">
+      {/* Compact mobile nav: equal-width 4-col grid so it always fits, even ~320px */}
+      <div className="md:hidden border-t-2 border-[var(--color-ink)] bg-paper px-3 py-2">
+        <nav
+          aria-label="Mobile"
+          className="grid grid-cols-4 gap-1.5 font-mono-code text-[12px]"
+        >
           {[
             { href: "/", label: "Home" },
             { href: "/articles", label: "Articles" },
@@ -65,12 +68,12 @@ export function SiteHeader({ nowBuilding = "AI Code Reviewer" }: SiteHeaderProps
             <Link
               key={l.href}
               href={l.href}
-              className="px-3 py-1 rounded border-2 border-[var(--color-ink)] bg-surface-container-lowest"
+              className="px-1 py-1 text-center rounded border-2 border-[var(--color-ink)] bg-surface-container-lowest text-on-surface active:bg-surface-container overflow-hidden text-ellipsis whitespace-nowrap"
             >
               {l.label}
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
     </header>
   );
