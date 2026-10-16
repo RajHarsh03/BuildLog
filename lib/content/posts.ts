@@ -1,4 +1,5 @@
 import computeReadingTime from "reading-time";
+import { Types } from "mongoose";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { dbConnect } from "@/lib/db/mongodb";
 import { PostModel, serializePost, type IPost } from "@/lib/db/models/Post";
@@ -151,14 +152,29 @@ async function getRelatedPostsUncached(
   limit: number,
 ): Promise<PostSummary[]> {
   await dbConnect();
-  const docs = await PostModel.find({
-    status: "published",
-    _id: { $ne: excludeId },
-    $or: [{ category }, { tags: { $in: tags } }],
-  })
-    .sort({ publishedAt: -1 })
-    .limit(limit)
-    .lean();
+  const exclude = new Types.ObjectId(excludeId);
+  // Random pick from same category/tags first...
+  const matched = await PostModel.aggregate<IPost & { _id: Types.ObjectId }>([
+    {
+      $match: {
+        status: "published",
+        _id: { $ne: exclude },
+        $or: [{ category }, { tags: { $in: tags } }],
+      },
+    },
+    { $sample: { size: limit } },
+  ]);
+  // ...then top up with random posts from the rest of the journal, so the
+  // "More From The Journal" row is always full.
+  let docs: (IPost & { _id: Types.ObjectId })[] = matched;
+  if (matched.length < limit) {
+    const taken = matched.map((m) => m._id);
+    const fill = await PostModel.aggregate<IPost & { _id: Types.ObjectId }>([
+      { $match: { status: "published", _id: { $nin: [exclude, ...taken] } } },
+      { $sample: { size: limit - matched.length } },
+    ]);
+    docs = [...matched, ...fill];
+  }
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 

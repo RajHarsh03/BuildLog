@@ -99,9 +99,21 @@ export default async function ArticlePage({ params }: { params: Params }) {
   };
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
+    <>
+      {/* Runs while the HTML is still parsing, before any of the page below
+          paints: restores the saved font-size as an html attribute. All zoom
+          styling lives in globals.css keyed on this attribute, so prose and
+          the A-/A+ buttons render at the right size from the very first
+          frame. Mirrors components/blog/FontSizeToggle.tsx. */}
       <script
-        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            `try{var z=parseInt(localStorage.getItem("buildlog-font-size")||"0",10);if(z){document.documentElement.setAttribute("data-font-size",String(z));}}catch(e){}`,
+        }}
+      />
+      <div className="w-full px-5 sm:px-8 py-8">
+        <script
+          type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="flex flex-col w-full">
@@ -163,31 +175,45 @@ export default async function ArticlePage({ params }: { params: Params }) {
           <aside className="hidden lg:block lg:col-span-4 self-start sticky top-28 space-y-6">
             {toc.length > 0 && <TableOfContents items={toc} />}
 
-            <div className="bg-surface-container-low border-2 border-on-surface rounded-lg p-4 shadow-[4px_4px_0px_0px_var(--color-ink)] flex items-start gap-3.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                alt={`${author.name} headshot`}
-                className="w-12 h-12 rounded-lg border-2 border-on-surface object-cover shrink-0 shadow-[2px_2px_0px_0px_var(--color-ink)]"
-                src={author.avatar}
-              />
-              <div className="space-y-1">
-                <div className="font-headline-sm text-headline-sm font-bold text-on-surface leading-tight">
-                  {author.name}
+            {/* Author chip - compact, matches the TOC card language */}
+            <div className="bg-surface-container-lowest border-2 border-on-surface rounded-lg p-4 shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all">
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt={`${author.name} avatar`}
+                  className="w-12 h-12 rounded-full border-2 border-on-surface object-cover shrink-0 shadow-[2px_2px_0px_0px_var(--color-ink)]"
+                  src={author.avatar}
+                />
+                <div className="min-w-0">
+                  <div className="font-headline-sm text-headline-sm font-bold text-on-surface leading-tight truncate">
+                    {author.name}
+                  </div>
+                  <div className="font-mono-code text-[11px] uppercase tracking-wider text-primary font-bold truncate">
+                    {author.role}
+                  </div>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant leading-snug">
-                  {author.role}. I document the messy realities of software architecture.
-                </p>
-                <div className="pt-1 flex items-center gap-3 font-mono-code text-label-sm text-primary font-semibold">
-                  <a
-                    className="flex items-center gap-0.5"
-                    href={author.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {author.handle}
-                    <Icon name="arrow_outward" size={13} />
-                  </a>
-                </div>
+              </div>
+              <p className="mt-3 font-body-sm text-body-sm text-on-surface-variant leading-snug">
+                I document the messy realities of software architecture - no
+                sponsors, no paywalls, pure signal.
+              </p>
+              <div className="mt-3 pt-3 border-t-2 border-dashed border-on-surface/25 flex items-center justify-between gap-2 font-mono-code text-label-sm">
+                <a
+                  className="inline-flex items-center gap-0.5 text-primary font-bold hover:underline"
+                  href={author.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {author.handle}
+                  <Icon name="arrow_outward" size={13} />
+                </a>
+                <Link
+                  className="inline-flex items-center gap-1 text-on-surface-variant font-semibold hover:text-primary transition-colors"
+                  href="/about"
+                >
+                  <span>About</span>
+                  <Icon name="arrow_forward" size={14} />
+                </Link>
               </div>
             </div>
           </aside>
@@ -236,43 +262,8 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </nav>
         )}
 
-        {/* Footer: author bio + related */}
+        {/* Footer: related posts */}
         <footer className="mt-16 pt-12 border-t-2 border-on-surface space-y-12">
-          <div className="p-6 md:p-8 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[6px_6px_0px_0px_var(--color-ink)]">
-            <div className="flex flex-col md:flex-row gap-6 items-start">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                alt={`${author.name} portrait`}
-                className="w-24 h-24 rounded-lg border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] object-cover shrink-0"
-                src={author.avatar}
-              />
-              <div className="space-y-3 flex-1">
-                <div>
-                  <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">
-                    {author.role}
-                  </span>
-                  <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-                    {author.name}
-                  </h3>
-                </div>
-                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                  {author.bio}
-                </p>
-                <div className="pt-2 flex flex-wrap items-center gap-4 border-t border-surface-container-high font-mono-code text-mono-code">
-                  <Link
-                    className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline"
-                    href="/about"
-                  >
-                    <Icon name="person" size={18} />
-                    <span>More about {author.name}</span>
-                  </Link>
-                  <span className="text-outline">•</span>
-                  <span className="text-on-surface-variant">No sponsors. No paywalls. Pure signal.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {related.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -289,7 +280,15 @@ export default async function ArticlePage({ params }: { params: Params }) {
                   View all logs <Icon name="arrow_forward" size={14} />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* 3-up max: 2 cards each take half the row; a lone card keeps
+                  the 1/3 card size instead of stretching full width. */}
+              <div
+                className={
+                  related.length === 2
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                }
+              >
                 {related.map((r) => (
                   <Link
                     key={r._id}
@@ -324,7 +323,8 @@ export default async function ArticlePage({ params }: { params: Params }) {
             </div>
           )}
         </footer>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
