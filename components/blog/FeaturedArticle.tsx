@@ -42,21 +42,20 @@ export function FeaturedArticle({ post }: { post: PostSummary }) {
           </div>
         </div>
 
-        <div className="font-mono-code text-[11px] text-on-surface-variant z-10 flex items-center justify-between">
+        <div className="font-mono-code text-[10px] sm:text-xs text-on-surface-variant z-10 flex items-center justify-between gap-4">
           <span>Field Notes &amp; Architecture</span>
-          <span className="text-tertiary font-bold">Long Read</span>
+          <span className="text-tertiary font-bold">
+            {post.readingTime >= 10 ? "Long Read" : "Short Read"}
+          </span>
         </div>
       </div>
 
       {/* Right: content */}
       <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 font-mono-code text-xs font-bold text-on-surface-variant">
-            <span>{formatDate(post.publishedAt ?? post.createdAt).toUpperCase()}</span>
-            <span>•</span>
-            <span>{post.readingTime} MIN READ</span>
-            <span>•</span>
-            <span className="text-secondary font-bold">{post.category.toUpperCase()}</span>
+          <div className="flex items-center justify-end gap-1.5 font-mono-code text-[11px] sm:text-xs font-bold text-secondary">
+            <Icon name="visibility" size={16} />
+            <span>{post.views.toLocaleString()} VIEWS</span>
           </div>
           <h3 className="font-headline-md text-headline-md font-bold text-on-surface group-hover:text-primary transition-colors">
             <Link href={`/articles/${post.slug}`}>{post.title}</Link>
@@ -77,7 +76,7 @@ export function FeaturedArticle({ post }: { post: PostSummary }) {
             ))}
           </div>
           <Link
-            className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface group-hover:text-primary transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 self-end sm:self-auto font-mono-code text-mono-code font-bold text-on-surface group-hover:text-primary transition-colors shrink-0"
             href={`/articles/${post.slug}`}
           >
             <span>Read Article</span>
