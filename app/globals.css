@@ -266,8 +266,8 @@
 }
 .mdx-content h2 {
   font-family: var(--font-headline-md);
-  font-size: 28px;
-  line-height: 36px;
+  font-size: 1.75em; /* 28px at base 16px; scales with A-/A+ zoom */
+  line-height: 1.29;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--color-on-surface);
@@ -276,8 +276,8 @@
 }
 .mdx-content h3 {
   font-family: var(--font-headline-sm);
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 1.25em; /* 20px at base */
+  line-height: 1.4;
   font-weight: 700;
   color: var(--color-on-surface);
   scroll-margin-top: 7rem;
@@ -285,15 +285,15 @@
 }
 .mdx-content p {
   font-family: var(--font-body-md);
-  font-size: 16px;
-  line-height: 28px;
+  font-size: 1em; /* 16px at base; scales with A-/A+ zoom */
+  line-height: 1.75;
   color: var(--color-on-surface-variant);
 }
 /* Editorial drop cap on the lead paragraph (matches the prototype). */
 .mdx-content > p:first-child {
   font-family: var(--font-body-lg);
-  font-size: 20px;
-  line-height: 32px;
+  font-size: 1.25em; /* 20px at base */
+  line-height: 1.6;
   color: var(--color-on-surface);
 }
 .mdx-content > p:first-child::first-letter {
@@ -327,7 +327,8 @@
   padding-left: 1.25rem;
   color: var(--color-on-surface-variant);
   font-family: var(--font-body-md);
-  line-height: 28px;
+  font-size: 1em; /* inherit article zoom */
+  line-height: 1.75;
 }
 .mdx-content ul {
   list-style: square;
@@ -347,14 +348,14 @@
 }
 .mdx-content blockquote p {
   font-family: var(--font-headline-md);
-  font-size: 22px;
-  line-height: 32px;
+  font-size: 1.375em; /* 22px at base; scales with zoom */
+  line-height: 1.45;
   font-style: italic;
   color: var(--color-on-surface);
 }
 .mdx-content :not(pre) > code {
   font-family: var(--font-mono-code);
-  font-size: 13px;
+  font-size: 0.8125em; /* 13px at base */
   background: var(--color-surface-container-high);
   border: 1px solid var(--color-ink);
   border-radius: 0.25rem;
@@ -366,7 +367,7 @@
   border-collapse: collapse;
   border: 2px solid var(--color-ink);
   font-family: var(--font-mono-code);
-  font-size: 13px;
+  font-size: 0.8125em; /* 13px at base */
 }
 .mdx-content th,
 .mdx-content td {
@@ -389,6 +390,35 @@
   box-shadow: 4px 4px 0px 0px #18181b;
 }
 
+/* ---- A-/A+ font-size toggle state (driven by <html data-font-size>, set
+   before first paint so the page never flashes the wrong size) ---- */
+html[data-font-size="-2"] #article-prose {
+  font-size: 13px;
+  line-height: 21px;
+}
+html[data-font-size="-1"] #article-prose {
+  font-size: 14px;
+  line-height: 24px;
+}
+html[data-font-size="1"] #article-prose {
+  font-size: 18px;
+  line-height: 30px;
+}
+html[data-font-size="2"] #article-prose {
+  font-size: 20px;
+  line-height: 34px;
+}
+html[data-font-size="1"] .fs-zoom-inc,
+html[data-font-size="2"] .fs-zoom-inc,
+html[data-font-size="-1"] .fs-zoom-dec,
+html[data-font-size="-2"] .fs-zoom-dec {
+  font-weight: 700;
+}
+html[data-font-size="2"] .fs-zoom-inc,
+html[data-font-size="-2"] .fs-zoom-dec {
+  opacity: 0.4;
+}
+
 /* ---- Shiki / rehype-pretty-code code blocks ---- */
 .mdx-content pre {
   border: 2px solid var(--color-ink);
@@ -398,8 +428,8 @@
   overflow-x: auto;
   padding: 1rem 1.25rem;
   font-family: var(--font-mono-code);
-  font-size: 13.5px;
-  line-height: 24px;
+  font-size: 0.844em; /* 13.5px at base */
+  line-height: 1.78;
 }
 /* Inside the CodeBlock terminal window, the <pre> drops its own chrome so the
    wrapper supplies the single border/shadow and the titlebar sits flush. */
