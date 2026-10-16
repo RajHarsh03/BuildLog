@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
-import { NewsletterForm } from "@/components/shared/NewsletterForm";
 import { CurrentlyBuilding } from "@/components/home/CurrentlyBuilding";
 import { TypingStatus } from "@/components/home/TypingStatus";
 import { FeaturedArticle } from "@/components/blog/FeaturedArticle";
 import { ArticleCard } from "@/components/blog/ArticleCard";
+import { ProjectCard } from "@/components/projects/ProjectCard";
 import { getFeaturedPost, getLatestPosts, getPostStats } from "@/lib/content/posts";
-import { getFeaturedProject } from "@/lib/content/projects";
+import { getFeaturedProject, getProjects } from "@/lib/content/projects";
 import { author } from "@/lib/utils";
 
 // Statically generated + edge-cached; admin publish/star refreshes it instantly
@@ -15,14 +15,19 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   // Public site must render even if the DB is unavailable; degrade gracefully.
-  const [featured, latest, stats, project] = await Promise.all([
+  const [featured, latest, stats, project, allProjects] = await Promise.all([
     getFeaturedPost().catch(() => null),
     getLatestPosts(3).catch(() => []),
     getPostStats().catch(() => ({ total: 0, published: 0, drafts: 0 })),
     getFeaturedProject().catch(() => null),
+    getProjects("all").catch(() => []),
   ]);
 
   const gridPosts = featured ? latest.filter((p) => p._id !== featured._id) : latest;
+  // Recent projects strip: skip the one already showcased in "Currently Building".
+  const recentProjects = allProjects
+    .filter((p) => !project || p._id !== project._id)
+    .slice(0, 3);
 
   return (
     <div className="w-full px-5 sm:px-8 py-8 overflow-x-clip">
@@ -215,32 +220,37 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* SECTION 4: NEWSLETTER CALLOUT */}
-        <section className="w-full">
-          <div className="bg-paper border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-10 relative overflow-hidden">
-            <div className="flex items-center justify-between border-b-2 border-on-surface pb-4 mb-6">
-              <div className="flex items-center gap-2 font-mono-code text-xs font-bold uppercase tracking-wider text-on-surface">
-                <Icon name="mark_email_unread" size={18} className="text-primary" />
-                <span>DISPATCHES FROM THE ENGINE ROOM</span>
-              </div>
-              <span className="font-mono-code text-xs text-on-surface-variant hidden sm:inline-block">
-                ZERO SPAM • 1-CLICK UNSUBSCRIBE
-              </span>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7 space-y-3">
+        {/* SECTION 4: RECENT PROJECTS */}
+        {recentProjects.length > 0 && (
+          <section className="w-full space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-mono-code text-xs uppercase tracking-wider text-primary font-bold">
+                  <Icon name="handyman" size={16} />
+                  <span>Bench to Production</span>
+                </div>
                 <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
-                  Get notified when I ship something new.
+                  Recent projects
                 </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-xl leading-relaxed">
-                  No spam, no marketing pitches - just engineering essays, deep postmortems, and open
-                  source releases directly from my desk.
+                <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
+                  Things I designed, shipped and maintained - source included.
                 </p>
               </div>
-              <NewsletterForm />
+              <Link
+                className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
+                href="/projects"
+              >
+                <span>View all projects</span>
+                <Icon name="arrow_forward" size={18} />
+              </Link>
             </div>
-          </div>
-        </section>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {recentProjects.map((p) => (
+                <ProjectCard key={p._id} project={p} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
