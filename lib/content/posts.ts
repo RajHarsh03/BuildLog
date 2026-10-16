@@ -1,4 +1,5 @@
 import computeReadingTime from "reading-time";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { dbConnect } from "@/lib/db/mongodb";
 import { PostModel, serializePost, type IPost } from "@/lib/db/models/Post";
 import type { Post, PostSummary } from "@/types/post";
@@ -36,7 +37,7 @@ export interface PostQuery {
 }
 
 /** Published posts with optional search/filter/sort/pagination. */
-export async function getPublishedPosts(query: PostQuery = {}) {
+async function getPublishedPostsUncached(query: PostQuery = {}) {
   await dbConnect();
   const { q, category, tag, sort = "newest", page = 1, perPage = POSTS_PER_PAGE } = query;
 
@@ -75,11 +76,23 @@ export async function getPublishedPosts(query: PostQuery = {}) {
   };
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+// Public reads are cached across requests and invalidated instantly when any
+// post mutation calls revalidateTag("posts").
+export const getPublishedPosts = unstable_cache(getPublishedPostsUncached, ["getPublishedPosts"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+async function getPostBySlugUncached(slug: string): Promise<Post | null> {
   await dbConnect();
   const doc = await PostModel.findOne({ slug, status: "published" }).lean();
   return doc ? serializePost(doc as never) : null;
 }
+
+export const getPostBySlug = unstable_cache(getPostBySlugUncached, ["getPostBySlug"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
 
 /** Any status — used by admin + preview. */
 export async function getPostBySlugAny(slug: string): Promise<Post | null> {
@@ -88,13 +101,20 @@ export async function getPostBySlugAny(slug: string): Promise<Post | null> {
   return doc ? serializePost(doc as never) : null;
 }
 
+/** All published slugs — used to prerender article pages at build time. */
+export async function getPublishedSlugs(): Promise<string[]> {
+  await dbConnect();
+  const docs = await PostModel.find({ status: "published" }).select("slug").lean();
+  return docs.map((d) => d.slug);
+}
+
 export async function getPostById(id: string): Promise<Post | null> {
   await dbConnect();
   const doc = await PostModel.findById(id).lean();
   return doc ? serializePost(doc as never) : null;
 }
 
-export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
+async function getLatestPostsUncached(limit = 3): Promise<PostSummary[]> {
   await dbConnect();
   const docs = await PostModel.find({ status: "published" })
     .sort({ publishedAt: -1 })
@@ -103,7 +123,12 @@ export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
-export async function getFeaturedPost(): Promise<PostSummary | null> {
+export const getLatestPosts = unstable_cache(getLatestPostsUncached, ["getLatestPosts"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+async function getFeaturedPostUncached(): Promise<PostSummary | null> {
   await dbConnect();
   // The starred post wins regardless of recency; drafts never surface publicly.
   const doc =
@@ -114,12 +139,22 @@ export async function getFeaturedPost(): Promise<PostSummary | null> {
   return doc ? toSummary(serializePost(doc as never)) : null;
 }
 
-export async function getRelatedPosts(post: Post, limit = 3): Promise<PostSummary[]> {
+export const getFeaturedPost = unstable_cache(getFeaturedPostUncached, ["getFeaturedPost"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+async function getRelatedPostsUncached(
+  excludeId: string,
+  category: string,
+  tags: string[],
+  limit: number,
+): Promise<PostSummary[]> {
   await dbConnect();
   const docs = await PostModel.find({
     status: "published",
-    _id: { $ne: post._id },
-    $or: [{ category: post.category }, { tags: { $in: post.tags } }],
+    _id: { $ne: excludeId },
+    $or: [{ category }, { tags: { $in: tags } }],
   })
     .sort({ publishedAt: -1 })
     .limit(limit)
@@ -127,12 +162,21 @@ export async function getRelatedPosts(post: Post, limit = 3): Promise<PostSummar
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
-export async function getAdjacentPosts(post: Post): Promise<{
-  prev: PostSummary | null;
-  next: PostSummary | null;
-}> {
+const getRelatedPostsCached = unstable_cache(getRelatedPostsUncached, ["getRelatedPosts"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+export function getRelatedPosts(post: Post, limit = 3): Promise<PostSummary[]> {
+  return getRelatedPostsCached(String(post._id), post.category, post.tags, limit);
+}
+
+async function getAdjacentPostsUncached(
+  publishedAt: string | null,
+  createdAt: string,
+): Promise<{ prev: PostSummary | null; next: PostSummary | null }> {
   await dbConnect();
-  const base = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt);
+  const base = publishedAt ? new Date(publishedAt) : new Date(createdAt);
   const [prev, next] = await Promise.all([
     PostModel.findOne({ status: "published", publishedAt: { $lt: base } })
       .sort({ publishedAt: -1 })
@@ -147,7 +191,22 @@ export async function getAdjacentPosts(post: Post): Promise<{
   };
 }
 
-export async function getCategories(): Promise<{ name: string; count: number }[]> {
+const getAdjacentPostsCached = unstable_cache(getAdjacentPostsUncached, ["getAdjacentPosts"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+export function getAdjacentPosts(post: Post): Promise<{
+  prev: PostSummary | null;
+  next: PostSummary | null;
+}> {
+  return getAdjacentPostsCached(
+    post.publishedAt ? String(post.publishedAt) : null,
+    String(post.createdAt),
+  );
+}
+
+async function getCategoriesUncached(): Promise<{ name: string; count: number }[]> {
   await dbConnect();
   const rows = await PostModel.aggregate<{ _id: string; count: number }>([
     { $match: { status: "published" } },
@@ -157,7 +216,12 @@ export async function getCategories(): Promise<{ name: string; count: number }[]
   return rows.map((r) => ({ name: r._id, count: r.count }));
 }
 
-export async function getTags(): Promise<{ name: string; count: number }[]> {
+export const getCategories = unstable_cache(getCategoriesUncached, ["getCategories"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
+
+async function getTagsUncached(): Promise<{ name: string; count: number }[]> {
   await dbConnect();
   const rows = await PostModel.aggregate<{ _id: string; count: number }>([
     { $match: { status: "published" } },
@@ -168,6 +232,11 @@ export async function getTags(): Promise<{ name: string; count: number }[]> {
   ]);
   return rows.map((r) => ({ name: r._id, count: r.count }));
 }
+
+export const getTags = unstable_cache(getTagsUncached, ["getTags"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
 
 /** Admin: all posts regardless of status, featured first then newest. */
 export async function getAllPostsAdmin(): Promise<PostSummary[]> {
@@ -200,6 +269,7 @@ export async function createPost(input: PostInput): Promise<Post> {
   if (input.featured === true) {
     await clearFeaturedExcept("post", String(doc._id));
   }
+  revalidateTag("posts");
   return serializePost(doc);
 }
 
@@ -223,11 +293,13 @@ export async function updatePost(id: string, input: Partial<PostInput>): Promise
   if (input.featured === true) {
     await clearFeaturedExcept("post", id);
   }
+  revalidateTag("posts");
   return doc ? serializePost(doc) : null;
 }
 
 export async function deletePost(id: string): Promise<boolean> {
   await dbConnect();
   const res = await PostModel.findByIdAndDelete(id);
+  revalidateTag("posts");
   return Boolean(res);
 }

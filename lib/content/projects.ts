@@ -1,3 +1,4 @@
+import { revalidateTag, unstable_cache } from "next/cache";
 import { dbConnect } from "@/lib/db/mongodb";
 import { ProjectModel, serializeProject, type IProject } from "@/lib/db/models/Project";
 import type { Project, ProjectSummary, ProjectStatus } from "@/types/project";
@@ -22,7 +23,7 @@ async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
   }
 }
 
-export async function getProjects(status?: ProjectStatus | "all"): Promise<ProjectSummary[]> {
+async function getProjectsUncached(status?: ProjectStatus | "all"): Promise<ProjectSummary[]> {
   await dbConnect();
   const filter = status && status !== "all" ? { status } : {};
   const docs = await ProjectModel.find(filter)
@@ -30,6 +31,12 @@ export async function getProjects(status?: ProjectStatus | "all"): Promise<Proje
     .lean();
   return docs.map((d) => toSummary(serializeProject(d as never)));
 }
+
+// Public reads are cached across requests; mutations call revalidateTag("projects").
+export const getProjects = unstable_cache(getProjectsUncached, ["getProjects"], {
+  tags: ["projects"],
+  revalidate: 300,
+});
 
 /** Public search across projects by name, description or technology. */
 export async function searchProjects(q: string, limit = 5): Promise<ProjectSummary[]> {
@@ -49,7 +56,7 @@ export async function searchProjects(q: string, limit = 5): Promise<ProjectSumma
   return docs.map((d) => toSummary(serializeProject(d as never)));
 }
 
-export async function getFeaturedProject(): Promise<ProjectSummary | null> {
+async function getFeaturedProjectUncached(): Promise<ProjectSummary | null> {
   await dbConnect();
   // The starred project wins regardless of status (spotlight follows the star);
   // otherwise fall back to the most recently updated active project.
@@ -60,16 +67,34 @@ export async function getFeaturedProject(): Promise<ProjectSummary | null> {
   return doc ? toSummary(serializeProject(doc as never)) : null;
 }
 
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
+export const getFeaturedProject = unstable_cache(
+  getFeaturedProjectUncached,
+  ["getFeaturedProject"],
+  { tags: ["projects"], revalidate: 300 },
+);
+
+async function getProjectBySlugUncached(slug: string): Promise<Project | null> {
   await dbConnect();
   const doc = await ProjectModel.findOne({ slug }).lean();
   return doc ? serializeProject(doc as never) : null;
 }
 
+export const getProjectBySlug = unstable_cache(getProjectBySlugUncached, ["getProjectBySlug"], {
+  tags: ["projects"],
+  revalidate: 300,
+});
+
 export async function getProjectById(id: string): Promise<Project | null> {
   await dbConnect();
   const doc = await ProjectModel.findById(id).lean();
   return doc ? serializeProject(doc as never) : null;
+}
+
+/** All project slugs — used to prerender project pages at build time. */
+export async function getAllProjectSlugs(): Promise<string[]> {
+  await dbConnect();
+  const docs = await ProjectModel.find({}).select("slug").lean();
+  return docs.map((d) => d.slug);
 }
 
 export async function getAllProjectsAdmin(): Promise<ProjectSummary[]> {
@@ -78,7 +103,7 @@ export async function getAllProjectsAdmin(): Promise<ProjectSummary[]> {
   return docs.map((d) => toSummary(serializeProject(d as never)));
 }
 
-export async function getProjectStatusCounts(): Promise<Record<string, number>> {
+async function getProjectStatusCountsUncached(): Promise<Record<string, number>> {
   await dbConnect();
   const rows = await ProjectModel.aggregate<{ _id: string; count: number }>([
     { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -91,6 +116,12 @@ export async function getProjectStatusCounts(): Promise<Record<string, number>> 
   return counts;
 }
 
+export const getProjectStatusCounts = unstable_cache(
+  getProjectStatusCountsUncached,
+  ["getProjectStatusCounts"],
+  { tags: ["projects"], revalidate: 300 },
+);
+
 export async function createProject(input: ProjectInput): Promise<Project> {
   await dbConnect();
   const slug = await uniqueSlug(input.name);
@@ -99,6 +130,7 @@ export async function createProject(input: ProjectInput): Promise<Project> {
   if (input.featured) {
     await clearFeaturedExcept("project", String(doc._id));
   }
+  revalidateTag("projects");
   return serializeProject(doc);
 }
 
@@ -118,11 +150,13 @@ export async function updateProject(
   if (input.featured === true) {
     await clearFeaturedExcept("project", id);
   }
+  revalidateTag("projects");
   return doc ? serializeProject(doc) : null;
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
   await dbConnect();
   const res = await ProjectModel.findByIdAndDelete(id);
+  revalidateTag("projects");
   return Boolean(res);
 }
