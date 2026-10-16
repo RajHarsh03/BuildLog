@@ -18,6 +18,7 @@ const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/posts", label: "Posts", exact: false },
   { href: "/admin/projects", label: "Projects", exact: false },
+  { href: "/admin/about", label: "About", exact: false },
 ];
 
 /** Sticky admin top bar styled identically to the public site header. */

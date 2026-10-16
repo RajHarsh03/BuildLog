@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getFeaturedProject } from "@/lib/content/projects";
 import { getPostStats } from "@/lib/content/posts";
+import { DEFAULT_ABOUT, featuredJourney, getAboutContent } from "@/lib/content/about";
 import { absoluteUrl, author } from "@/lib/utils";
 
 export const revalidate = 60;
@@ -23,52 +24,6 @@ export const metadata: Metadata = {
   },
 };
 
-const SKILLS: { group: string; icon: string; items: string[] }[] = [
-  {
-    group: "Languages",
-    icon: "code",
-    items: ["TypeScript", "JavaScript", "Go", "Rust", "Python", "SQL"],
-  },
-  {
-    group: "Backend & Data",
-    icon: "database",
-    items: ["Node.js", "PostgreSQL", "MongoDB", "Redis", "gRPC", "pgvector"],
-  },
-  {
-    group: "Frontend",
-    icon: "web",
-    items: ["React", "Next.js", "Tailwind CSS", "Vite", "WebAssembly"],
-  },
-  {
-    group: "Infrastructure",
-    icon: "cloud",
-    items: ["Docker", "Linux", "CI/CD", "Observability", "Edge SSR"],
-  },
-];
-
-const JOURNEY: { year: string; title: string; body: string }[] = [
-  {
-    year: "2022",
-    title: "First lines in production",
-    body: "Started shipping internal tools and learned that readable code beats clever code the moment someone else has to maintain it at 2am.",
-  },
-  {
-    year: "2023",
-    title: "Down the systems rabbit hole",
-    body: "Built embedded queues and caches, profiled latency budgets, and developed a lasting obsession with mechanical sympathy.",
-  },
-  {
-    year: "2024",
-    title: "Open source & writing",
-    body: "Released diagnostics tooling and started documenting every postmortem. This journal is the compounding artifact of that habit.",
-  },
-  {
-    year: "2025",
-    title: "Agentic tooling",
-    body: "Currently exploring AST-aware automation and AI-assisted code review that respects developer intent instead of guessing at it.",
-  },
-];
-
 const SOCIALS: { label: string; icon: string; href: string }[] = [
   { label: "GitHub", icon: "code", href: "https://github.com/RajHarsh03" },
   { label: "LinkedIn", icon: "work", href: "https://www.linkedin.com/in/rajharsh03" },
@@ -77,10 +32,15 @@ const SOCIALS: { label: string; icon: string; href: string }[] = [
 ];
 
 export default async function AboutPage() {
-  const [project, stats] = await Promise.all([
+  // Content is managed from the dashboard (/admin/about); DB outage falls back
+  // to the original defaults so the public page never breaks.
+  const [project, stats, aboutRaw] = await Promise.all([
     getFeaturedProject().catch(() => null),
     getPostStats().catch(() => ({ total: 0, published: 0, drafts: 0 })),
+    getAboutContent().catch(() => null),
   ]);
+  const about = aboutRaw ?? { _id: "", ...DEFAULT_ABOUT };
+  const journey = featuredJourney(about);
 
   return (
     <div className="w-full px-5 sm:px-8 py-8">
@@ -98,8 +58,8 @@ export default async function AboutPage() {
             <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight leading-none">
               Hi, I&apos;m {author.name}.
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
-              {author.bio}
+            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed whitespace-pre-line">
+              {about.intro}
             </p>
             <div className="flex flex-wrap gap-3">
               {SOCIALS.map((s) => (
@@ -184,9 +144,9 @@ export default async function AboutPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {JOURNEY.map((j) => (
+            {journey.map((j) => (
               <div
-                key={j.year}
+                key={`${j.year}-${j.title}`}
                 className="bg-surface-container-lowest border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] rounded-lg p-6 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all"
               >
                 <div className="font-mono-code text-label-md font-bold text-primary mb-2">
@@ -215,9 +175,9 @@ export default async function AboutPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SKILLS.map((s) => (
+            {about.skills.map((s) => (
               <div
-                key={s.group}
+                key={`${s.group}-${s.icon}`}
                 className="bg-surface-container-lowest border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] rounded-lg p-5 space-y-3"
               >
                 <div className="flex items-center gap-2 font-mono-code text-label-md font-bold text-on-surface uppercase">
