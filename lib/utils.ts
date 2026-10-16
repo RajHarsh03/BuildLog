@@ -49,6 +49,5 @@ export const author = {
   bio: "I'm a full-stack engineer and backend infrastructure enthusiast obsessed with mechanical sympathy, latency budgets, and minimal developer toolchains. When not shipping production APIs, I write open-source diagnostics and curate this journal.",
 };
 
-/** Shared wordmark logo URL from the prototype. */
-export const WORDMARK_URL =
-  "https://lh3.googleusercontent.com/aida/AEtjO1USCQdhE8-vlGvPbVElRE1KR303Yt5rVDLVTc7VtLI4Gyv2FAet9Xxh5kTVp_KoE-DuUvicl4giqafPus3_Ox5GcRSZzGhTPdebZrV6RHljbaGYjbrTvxWov-VBQWO2jA2f7ff4UE6yItlDwnWVALJyEZ6yznPdOtHPIrpwlIEPqXn8peSzVMheco73ubWkM8D_8ycbXFnHAQAkPGe7CDCC_36A8nWFz7oXBbith20sE4p_dWn25-MCn-o";
+/** Wordmark logo, bundled from /public so it can never expire or 404. */
+export const WORDMARK_URL = "/wordmark.png";
