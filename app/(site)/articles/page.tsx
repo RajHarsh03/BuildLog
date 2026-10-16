@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { ArticleFilters } from "@/components/blog/ArticleFilters";
 import { Pagination } from "@/components/blog/Pagination";
+import { RecentlyViewed } from "@/components/blog/RecentlyViewed";
 import {
   getPublishedPosts,
   getCategories,
@@ -83,7 +84,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
             <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight leading-none">
               All Articles
             </h1>
-            <p className="font-headline-md text-headline-lg-mobile md:text-headline-md text-on-surface-variant font-normal leading-snug">
+            <p className="font-headline-md text-body-md md:text-headline-md text-on-surface-variant font-normal leading-relaxed md:leading-snug">
               Notes, experiments, lessons, and architectural postmortems from my journey of building
               software. Written by{" "}
               <span className="text-primary font-semibold underline decoration-2 decoration-primary underline-offset-4">
@@ -94,6 +95,9 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
           </div>
         </header>
 
+        {/* Per-visitor history strip (localStorage; hidden until 2+ posts viewed) */}
+        <RecentlyViewed />
+
         {/* Search + filters (client) */}
         <Suspense fallback={null}>
           <ArticleFilters categories={categories} tags={tags} totalCount={totalCount} />
@@ -101,14 +105,14 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
 
         {/* Grid */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2">
-            <span className="font-mono-code text-mono-code font-bold text-on-surface uppercase tracking-wider flex items-center gap-1.5">
-              <Icon name="segment" size={18} className="text-primary" />
+          <div className="flex items-center justify-between gap-3 sm:gap-4 pb-2">
+            <span className="font-mono-code text-[11px] sm:text-mono-code font-bold text-on-surface uppercase tracking-wide sm:tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+              <Icon name="segment" size={16} className="text-primary shrink-0" />
               <span>
                 Showing {result.posts.length} of {result.total} articles
               </span>
             </span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant">
+            <span className="font-label-sm text-[11px] sm:text-label-sm text-on-surface-variant whitespace-nowrap shrink-0">
               Page {result.page} of {result.totalPages}
             </span>
           </div>
