@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { recordViewedPost } from "@/components/blog/RecentlyViewed";
 
 /** Same visitor reloading within this window counts as ONE view. */
 const COOLDOWN_MS = 30 * 60 * 1000;
@@ -19,14 +20,21 @@ const stampKey = (postId: string) => `buildlog-view:${postId}`;
 export function ViewTracker({
   postId,
   initial,
+  slug,
+  title,
 }: {
   postId: string;
   initial: number;
+  /** When provided, the visit is also saved to the reader's local history. */
+  slug?: string;
+  title?: string;
 }) {
   const [views, setViews] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    if (slug && title) recordViewedPost(slug, title);
 
     let lastSeen = 0;
     try {
@@ -54,7 +62,7 @@ export function ViewTracker({
     return () => {
       cancelled = true;
     };
-  }, [postId]);
+  }, [postId, slug, title]);
 
   // Nothing trustworthy yet: render no element at all (avoids "0 views").
   if (views === null && initial === 0) return null;
