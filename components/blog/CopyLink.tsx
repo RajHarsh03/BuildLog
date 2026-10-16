@@ -49,14 +49,21 @@ export function CopyLink({
       ? createPortal(
           <div
             role="status"
-            className="toast-in fixed bottom-24 right-6 z-50 max-w-sm p-4 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)]"
+            style={{
+              position: "fixed",
+              bottom: 16,
+              right: 12,
+              zIndex: 999,
+              maxWidth: "min(380px, calc(100vw - 24px))",
+            }}
+            className="toast-in p-3 sm:p-4 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[0_-4px_0px_0px_var(--color-ink)]"
           >
-            <div className="flex items-center gap-2 font-headline-sm text-headline-sm font-bold text-on-surface">
-              <Icon name="check_circle" size={18} className="text-tertiary-container" />
+            <div className="flex items-center gap-2 font-mono-code text-[13px] sm:font-headline-sm sm:text-headline-sm font-bold text-on-surface">
+              <Icon name="check_circle" size={15} className="text-tertiary-container shrink-0" />
               Link copied!
             </div>
             {title && (
-              <p className="mt-1.5 font-body-sm text-body-sm text-on-surface-variant leading-snug">
+              <p className="mt-1 sm:mt-1.5 font-mono-code text-[10px] sm:font-body-sm sm:text-body-sm text-on-surface-variant leading-snug">
                 &quot;{title}&quot; URL is ready to share
               </p>
             )}
