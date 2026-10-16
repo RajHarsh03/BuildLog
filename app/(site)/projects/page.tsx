@@ -6,7 +6,7 @@ import { ProjectsBrowser } from "@/components/projects/ProjectsBrowser";
 import { getProjects, getProjectStatusCounts } from "@/lib/content/projects";
 import { absoluteUrl, author } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const DESCRIPTION =
   "A curated archive of side projects, developer tools, open-source libraries, and experiments. Built from scratch with an emphasis on runtime efficiency and production resilience.";

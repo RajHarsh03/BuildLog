@@ -14,7 +14,18 @@ import {
 } from "@/lib/content/posts";
 import { absoluteUrl, formatDate, author } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+/** Prerender every published article at build time (DB-tolerant). */
+export async function generateStaticParams() {
+  try {
+    const { getPublishedSlugs } = await import("@/lib/content/posts");
+    const slugs = await getPublishedSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return []; // New slugs still render on demand and get cached (dynamicParams).
+  }
+}
 
 type Params = Promise<{ slug: string }>;
 

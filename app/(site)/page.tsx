@@ -9,7 +9,9 @@ import { getFeaturedPost, getLatestPosts, getPostStats } from "@/lib/content/pos
 import { getFeaturedProject } from "@/lib/content/projects";
 import { author } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+// Statically generated + edge-cached; admin publish/star refreshes it instantly
+// via revalidateTag, and this bounds staleness as a safety net.
+export const revalidate = 60;
 
 export default async function HomePage() {
   // Public site must render even if the DB is unavailable; degrade gracefully.

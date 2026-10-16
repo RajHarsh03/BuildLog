@@ -7,7 +7,7 @@ import { getFeaturedProject } from "@/lib/content/projects";
 import { getPostStats } from "@/lib/content/posts";
 import { absoluteUrl, author } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const DESCRIPTION = `About ${author.name} - ${author.role}. The person behind BuildLog.`;
 
