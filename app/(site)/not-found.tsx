@@ -4,7 +4,7 @@ import { Icon } from "@/components/shared/Icon";
 /** 404 for public routes — renders inside the (site) layout chrome. */
 export default function SiteNotFound() {
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 text-center">
       <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-[#FEF3C7] border-2 border-on-surface rounded-lg shadow-[6px_6px_0px_0px_var(--color-ink)]">
         <span className="font-display text-display-mobile text-[#92400E]">404</span>
       </div>
