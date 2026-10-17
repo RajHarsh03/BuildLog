@@ -15,10 +15,11 @@ interface AdminNavProps {
 }
 
 const LINKS = [
-  { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/posts", label: "Posts", exact: false },
-  { href: "/admin/projects", label: "Projects", exact: false },
-  { href: "/admin/about", label: "About", exact: false },
+  { href: "/admin", label: "Dashboard", exact: true, icon: "space_dashboard" },
+  { href: "/admin/posts", label: "Posts", exact: false, icon: "article" },
+  { href: "/admin/projects", label: "Projects", exact: false, icon: "rocket_launch" },
+  { href: "/admin/comments", label: "Comments", exact: false, icon: "forum" },
+  { href: "/admin/about", label: "About", exact: false, icon: "person" },
 ];
 
 /** Sticky admin top bar styled identically to the public site header. */
@@ -136,23 +137,25 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
         </div>
       </div>
 
-      {/* Compact mobile nav - equal-width grid, always fits (mirrors public header) */}
+      {/* Compact mobile nav - icon-only 5-col grid, always a single row */}
       <div className="md:hidden border-t-2 border-[var(--color-ink)] bg-paper px-3 py-2">
-        <nav aria-label="Admin mobile" className="grid grid-cols-4 gap-1.5 font-mono-code text-[12px]">
+        <nav aria-label="Admin mobile" className="grid grid-cols-5 gap-1.5">
           {LINKS.map((l) => {
             const active = isActive(l.href, l.exact);
             return (
               <Link
                 key={l.href}
                 href={l.href}
+                aria-label={l.label}
+                title={l.label}
                 className={clsx(
-                  "px-1 py-1 text-center rounded border-2 border-[var(--color-ink)] overflow-hidden text-ellipsis whitespace-nowrap",
+                  "flex items-center justify-center py-1.5 rounded border-2 border-[var(--color-ink)]",
                   active
-                    ? "bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0px_0px_var(--color-ink)]"
+                    ? "bg-primary-container text-on-primary-container shadow-[2px_2px_0px_0px_var(--color-ink)]"
                     : "bg-surface-container-lowest text-on-surface",
                 )}
               >
-                {l.label}
+                <Icon name={l.icon} size={17} weight={active ? 600 : 400} />
               </Link>
             );
           })}
