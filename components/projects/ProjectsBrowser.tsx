@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import type { ProjectSummary, ProjectStatus } from "@/types/project";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,6 @@ const FILTERS: { key: ProjectStatus | "all"; label: string; short: string; dot?:
   { key: "all", label: "All Projects", short: "All" },
   { key: "active", label: "Active", short: "Active", dot: "bg-tertiary" },
   { key: "shipped", label: "Shipped", short: "Shipped", dot: "bg-secondary-container" },
-  { key: "archived", label: "Archived / Learned", short: "Archived", dot: "bg-outline" },
 ];
 
 export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrowserProps) {
@@ -102,9 +102,14 @@ export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrows
             <ProjectCard key={project._id} project={project} featured={i === 0 && filter === "all"} />
           ))
         ) : (
-          <p className="md:col-span-12 font-body-md text-body-md text-on-surface-variant">
-            No projects in this category yet.
-          </p>
+          <div className="md:col-span-12">
+            <EmptyState
+              icon="engineering"
+              label="Projects // empty"
+              title="No projects in this category yet"
+              description="Try a different filter, or check back after the next ship."
+            />
+          </div>
         )}
       </div>
     </>
