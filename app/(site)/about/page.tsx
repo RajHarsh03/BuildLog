@@ -31,6 +31,71 @@ const SOCIALS: { label: string; icon: string; href: string }[] = [
   { label: "Twitter", icon: "alternate_email", href: "https://twitter.com/RajHarsh03" },
 ];
 
+/**
+ * Profile card (avatar, handle, quick stats). Rendered twice: inline in the
+ * text column on mobile (between the role badge and the heading), and in the
+ * right rail on desktop.
+ */
+function ProfileCard({
+  stats,
+}: {
+  stats: { total: number; published: number; drafts: number };
+}) {
+  return (
+    <div className="relative">
+      <div className="hidden sm:flex absolute -top-4 right-1 z-20 px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] rounded font-label-sm text-label-sm uppercase font-bold items-center gap-1.5 rotate-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mint opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-mint" />
+        </span>
+        <span>Always Building</span>
+      </div>
+      <div className="hidden sm:flex absolute -bottom-4 left-2 z-20 px-3 py-1 bg-secondary-fixed text-on-secondary-fixed border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] rounded font-label-sm text-label-sm uppercase font-bold items-center gap-1.5 -rotate-2">
+        <Icon name="engineering" size={14} />
+        <span>Builds · Learns · Documents</span>
+      </div>
+      <div className="bg-surface-container-lowest border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 space-y-5">
+        <div className="flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt="Harsh Raj"
+            className="w-20 h-20 rounded-full object-cover border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] shrink-0"
+            src={author.avatar}
+          />
+          <div className="space-y-1.5 min-w-0">
+            <div className="font-headline-md text-headline-md font-bold text-on-surface">
+              Harsh Raj
+            </div>
+            <a
+              className="inline-flex items-center gap-1 font-mono-code text-label-sm text-primary font-bold"
+              href={author.website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {author.handle}
+              <Icon name="arrow_outward" size={13} />
+            </a>
+          </div>
+        </div>
+        <div className="border-t-2 border-surface-container pt-4 space-y-2 font-mono-code text-label-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-on-surface-variant">Published</span>
+            <span className="font-bold text-on-surface">{stats.published}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-on-surface-variant">Drafts</span>
+            <span className="font-bold text-on-surface">{stats.drafts}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-on-surface-variant">Location</span>
+            <span className="font-bold text-on-surface">Kolkata, IN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function AboutPage() {
   // Content is managed from the dashboard (/admin/about); DB outage falls back
   // to the original defaults so the public page never breaks.
@@ -55,80 +120,43 @@ export default async function AboutPage() {
                 {author.role}
               </span>
             </div>
+
+            {/* Profile card between badge and heading on mobile/tablet */}
+            <div className="lg:hidden">
+              <ProfileCard stats={stats} />
+            </div>
+
             <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight leading-none">
               Hi, I&apos;m {author.name}.
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed whitespace-pre-line">
+            <p className="font-body-lg text-body-md md:text-body-lg text-on-surface-variant max-w-2xl leading-relaxed whitespace-pre-line">
               {about.intro}
             </p>
-            <div className="flex flex-wrap gap-3">
+            {/* Social links: icon-only on mobile, icon + label on desktop */}
+            <div className="flex items-center gap-2">
               {SOCIALS.map((s) => (
                 <a
                   key={s.label}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface font-mono-code text-label-md font-bold rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
+                  aria-label={s.label}
+                  title={s.label}
+                  className="inline-flex items-center justify-center gap-2 w-10 h-10 sm:w-auto px-0 sm:px-3.5 bg-surface-container-lowest text-on-surface rounded-lg border-2 border-on-surface shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--color-ink)] hover:text-primary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                   href={s.href}
                   {...(s.href.startsWith("http") || s.href.startsWith("mailto:")
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
-                  <Icon name={s.icon} size={18} />
-                  <span>{s.label}</span>
+                  <Icon name={s.icon} size={17} />
+                  <span className="hidden sm:inline font-mono-code text-label-sm font-bold whitespace-nowrap">
+                    {s.label}
+                  </span>
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Profile card */}
-          <div className="lg:col-span-4 relative lg:mt-24 lg:-translate-x-12">
-            <div className="hidden sm:flex absolute -top-4 right-1 z-20 px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] rounded font-label-sm text-label-sm uppercase font-bold items-center gap-1.5 rotate-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-tertiary-container" />
-              </span>
-              <span>Always Building</span>
-            </div>
-            <div className="hidden sm:flex absolute -bottom-4 left-2 z-20 px-3 py-1 bg-secondary-fixed text-on-secondary-fixed border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] rounded font-label-sm text-label-sm uppercase font-bold items-center gap-1.5 -rotate-2">
-              <Icon name="engineering" size={14} />
-              <span>Builds · Learns · Documents</span>
-            </div>
-            <div className="bg-surface-container-lowest border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 space-y-5">
-              <div className="flex items-center gap-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt="Harsh Raj"
-                  className="w-20 h-20 rounded-full object-cover border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] shrink-0"
-                  src={author.avatar}
-                />
-                <div className="space-y-1.5 min-w-0">
-                  <div className="font-headline-md text-headline-md font-bold text-on-surface">
-                    Harsh Raj
-                  </div>
-                  <a
-                    className="inline-flex items-center gap-1 font-mono-code text-label-sm text-primary font-bold"
-                    href={author.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {author.handle}
-                    <Icon name="arrow_outward" size={13} />
-                  </a>
-                </div>
-              </div>
-              <div className="border-t-2 border-surface-container pt-4 space-y-2 font-mono-code text-label-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-on-surface-variant">Published</span>
-                  <span className="font-bold text-on-surface">{stats.published}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-on-surface-variant">Drafts</span>
-                  <span className="font-bold text-on-surface">{stats.drafts}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-on-surface-variant">Location</span>
-                  <span className="font-bold text-on-surface">Kolkata, IN</span>
-                </div>
-              </div>
-            </div>
+          {/* Profile card - right rail on desktop only */}
+          <div className="hidden lg:block lg:col-span-4 lg:mt-24 lg:-translate-x-12">
+            <ProfileCard stats={stats} />
           </div>
         </header>
 
@@ -214,7 +242,7 @@ export default async function AboutPage() {
             <div className="bg-mint-soft border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-3 max-w-2xl">
                 <div className="flex items-center gap-3">
-                  <StatusBadge status={project.status} label={project.status} />
+                  <StatusBadge status={project.status} label={project.status} size="sm" />
                 </div>
                 <h3 className="font-headline-md text-headline-md font-bold text-on-surface">
                   {project.name}
