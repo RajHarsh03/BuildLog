@@ -36,7 +36,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
   ]);
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
+    <div className="w-full px-5 sm:px-8 pt-8">
       <div className="flex flex-col w-full">
         {/* Breadcrumb & editorial header */}
         <header className="w-full mb-10">
