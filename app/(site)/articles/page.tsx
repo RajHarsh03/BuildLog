@@ -67,8 +67,8 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
   if (sort && sort !== "newest") query.sort = sort;
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
-      <div className="flex flex-col w-full space-y-12 pb-16">
+    <div className="w-full px-5 sm:px-8 pt-8">
+      <div className="flex flex-col w-full space-y-12">
         {/* Archive header */}
         <header className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
