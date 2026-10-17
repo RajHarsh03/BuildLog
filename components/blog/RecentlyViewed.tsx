@@ -43,6 +43,15 @@ function readViewed(): ViewedPost[] {
   }
 }
 
+/** Wipe this visitor's local reading history. */
+export function clearViewedPosts() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* storage disabled - nothing to clear */
+  }
+}
+
 /**
  * "Recently viewed" strip for the articles page: minimal one-line cards
  * (title + Continue) built from this visitor's localStorage history.
@@ -63,9 +72,22 @@ export function RecentlyViewed({ excludeSlug }: { excludeSlug?: string }) {
 
   return (
     <section aria-label="Recently viewed" className="w-full space-y-3">
-      <div className="flex items-center gap-2 font-mono-code text-mono-code font-bold uppercase tracking-wider text-on-surface">
-        <Icon name="history" size={18} className="text-primary" />
-        <span>Recently viewed</span>
+      <div className="flex items-center gap-2 justify-between font-mono-code text-mono-code font-bold uppercase tracking-wider text-on-surface">
+        <span className="inline-flex items-center gap-2">
+          <Icon name="history" size={18} className="text-primary" />
+          <span>Recently viewed</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            clearViewedPosts();
+            setItems([]);
+          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-lowest text-on-surface-variant font-mono-code text-[11px] font-bold uppercase tracking-wider rounded border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--color-ink)] hover:text-[#991B1B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+        >
+          <Icon name="delete_sweep" size={14} />
+          <span>Clear</span>
+        </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {items.map((p) => (
