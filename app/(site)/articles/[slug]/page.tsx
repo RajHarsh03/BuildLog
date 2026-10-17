@@ -114,7 +114,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             `try{var z=parseInt(localStorage.getItem("buildlog-font-size")||"0",10);if(z){document.documentElement.setAttribute("data-font-size",String(z));}}catch(e){}`,
         }}
       />
-      <div className="w-full px-5 sm:px-8 py-8">
+      <div className="w-full px-5 sm:px-8 pt-8">
         <script
           type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
