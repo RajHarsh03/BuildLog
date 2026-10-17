@@ -17,7 +17,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <>
       <SiteHeader nowBuilding={nowBuilding} />
       {/* Fixed header (h-20) + compact mobile nav row; offset content accordingly. */}
-      <main className="w-full pt-[132px] md:pt-20 bg-background flex-1">{children}</main>
+      <main className="w-full pt-[132px] md:pt-20 pb-16 bg-background flex-1">{children}</main>
       <SiteFooter />
       <BackToTop />
     </>
