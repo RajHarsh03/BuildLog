@@ -18,7 +18,7 @@ export default async function LoginPage({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             alt="BuildLog Wordmark Logo"
-            className="h-9 w-auto object-contain"
+            className="h-9 w-auto object-contain dark:[filter:invert(1)_hue-rotate(180deg)]"
             src={WORDMARK_URL}
           />
 
