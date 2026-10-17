@@ -8,6 +8,7 @@ import { AuthorChip } from "@/components/blog/AuthorChip";
 import { FontSizeToggle } from "@/components/blog/FontSizeToggle";
 import { ViewTracker } from "@/components/blog/ViewTracker";
 import { CopyLink } from "@/components/blog/CopyLink";
+import { Comments } from "@/components/blog/Comments";
 import { renderMdx } from "@/lib/mdx/render";
 import {
   getPostBySlug,
@@ -159,7 +160,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
               {post.tags.map((t) => (
                 <Link
                   key={t}
-                  className="px-1.5 py-px bg-surface-container-lowest border border-on-surface rounded font-mono-code text-[10px] text-on-surface hover:text-primary hover:border-primary transition-colors"
+                  className="font-mono-code text-label-sm px-2.5 py-1 bg-surface-container text-on-surface rounded border-2 border-on-surface shadow-[1px_1px_0px_0px_var(--color-ink)] font-bold hover:text-primary hover:border-primary transition-colors"
                   href={`/articles?tag=${encodeURIComponent(t)}`}
                 >
                   {t}
@@ -252,6 +253,9 @@ export default async function ArticlePage({ params }: { params: Params }) {
             )}
           </nav>
         )}
+
+        {/* Site-native comments backed by MongoDB; readers sign in with GitHub */}
+        <Comments postId={post._id} />
 
         {/* Footer: related posts */}
         <footer className="mt-16 pt-12 border-t-2 border-on-surface space-y-12">
