@@ -33,13 +33,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    jwt({ token, user }) {
+    jwt({ token, user, profile }) {
       if (user) token.sub = user.id ?? token.sub;
+      // GitHub's raw OAuth profile carries the username; keep it for profile links.
+      const login = (profile as { login?: string } | undefined)?.login;
+      if (login) token.githubLogin = login;
       return token;
     },
     session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        if (token.githubLogin) session.user.githubLogin = String(token.githubLogin);
       }
       return session;
     },

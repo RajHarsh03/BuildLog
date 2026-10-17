@@ -5,6 +5,8 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
+      /** GitHub username, captured at OAuth sign-in; used for comment profile links. */
+      githubLogin?: string;
     } & DefaultSession["user"];
   }
 
@@ -16,5 +18,6 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     sub?: string;
+    githubLogin?: string;
   }
 }
