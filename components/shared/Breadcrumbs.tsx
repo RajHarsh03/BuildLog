@@ -32,13 +32,18 @@ export interface Crumb {
 /**
  * Site-wide breadcrumb trail. Always starts with the Home link; the last
  * crumb (no href) renders as a bordered chip. One style for every page.
+ * Admin pages override the root crumb to "Dashboard" -> /admin.
  */
 export function Breadcrumbs({
   items,
   className,
+  homeLabel = "Home",
+  homeHref = "/",
 }: {
   items: Crumb[];
   className?: string;
+  homeLabel?: string;
+  homeHref?: string;
 }) {
   return (
     <nav
@@ -47,10 +52,10 @@ export function Breadcrumbs({
     >
       <Link
         className="hover:text-primary transition-colors flex items-center gap-1.5 shrink-0"
-        href="/"
+        href={homeHref}
       >
         <HomeIcon />
-        <span>Home</span>
+        <span>{homeLabel}</span>
       </Link>
       {items.map((item, i) => (
         <Fragment key={`${item.label}-${i}`}>
