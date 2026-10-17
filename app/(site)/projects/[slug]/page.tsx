@@ -56,7 +56,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
   const rendered = project.content ? await renderMdx(project.content) : null;
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
+    <div className="w-full px-5 sm:px-8 pt-8">
       <div className="flex flex-col w-full">
         {/* Header */}
         <header className="w-full pb-8 mb-10 border-b-2 border-on-surface space-y-6">
