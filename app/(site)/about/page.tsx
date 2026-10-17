@@ -108,8 +108,8 @@ export default async function AboutPage() {
   const journey = featuredJourney(about);
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
-      <div className="flex flex-col w-full space-y-12 pb-16">
+    <div className="w-full px-5 sm:px-8 pt-8">
+      <div className="flex flex-col w-full space-y-12">
         {/* Intro */}
         <header className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-6">
