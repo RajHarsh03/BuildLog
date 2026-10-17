@@ -11,11 +11,11 @@ interface ProjectsBrowserProps {
   counts: Record<string, number>;
 }
 
-const FILTERS: { key: ProjectStatus | "all"; label: string; dot?: string }[] = [
-  { key: "all", label: "All Projects" },
-  { key: "active", label: "Active", dot: "bg-tertiary" },
-  { key: "shipped", label: "Shipped", dot: "bg-secondary-container" },
-  { key: "archived", label: "Archived / Learned", dot: "bg-outline" },
+const FILTERS: { key: ProjectStatus | "all"; label: string; short: string; dot?: string }[] = [
+  { key: "all", label: "All Projects", short: "All" },
+  { key: "active", label: "Active", short: "Active", dot: "bg-tertiary" },
+  { key: "shipped", label: "Shipped", short: "Shipped", dot: "bg-secondary-container" },
+  { key: "archived", label: "Archived / Learned", short: "Archived", dot: "bg-outline" },
 ];
 
 export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
@@ -24,8 +24,9 @@ export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
-        <div className="flex flex-wrap items-center gap-2" role="tablist">
+      <div className="pt-4 space-y-3 lg:flex lg:items-center lg:justify-between lg:gap-4 lg:space-y-0">
+        {/* Mobile: tidy 2x2 grid of equal chips; desktop: inline row as before */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap items-center" role="tablist">
           {FILTERS.map((f) => {
             const active = filter === f.key;
             return (
@@ -36,17 +37,20 @@ export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
                 aria-selected={active}
                 onClick={() => setFilter(f.key)}
                 className={cn(
-                  "px-4 py-2 font-mono-code text-label-md rounded border-2 border-on-surface transition-all flex items-center gap-2",
+                  "w-full sm:w-auto px-2 sm:px-4 py-1.5 sm:py-2 font-mono-code text-[11px] sm:text-label-md rounded border-2 border-on-surface transition-all flex items-center justify-center gap-1.5 sm:gap-2",
                   active
                     ? "bg-on-surface text-surface-container-lowest shadow-[3px_3px_0px_0px_var(--color-ink)]"
                     : "bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-[2px_2px_0px_0px_var(--color-ink)]",
                 )}
               >
-                {f.dot && <span className={cn("w-2 h-2 rounded-full", f.dot)} />}
-                <span>{f.label}</span>
+                {f.dot && <span className={cn("w-2 h-2 rounded-full shrink-0", f.dot)} />}
+                <span className="truncate sm:whitespace-nowrap">
+                  <span className="sm:hidden">{f.short}</span>
+                  <span className="hidden sm:inline">{f.label}</span>
+                </span>
                 <span
                   className={cn(
-                    "text-label-sm font-bold",
+                    "text-[10px] sm:text-label-sm font-bold",
                     active ? "text-surface-container-lowest/70" : "text-on-surface-variant",
                   )}
                 >
@@ -56,8 +60,8 @@ export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
             );
           })}
         </div>
-        <div className="font-mono-code text-label-sm text-on-surface-variant flex items-center gap-2">
-          <Icon name="tune" size={16} className="text-tertiary" />
+        <div className="font-mono-code text-[10px] sm:text-label-sm text-on-surface-variant flex items-center gap-1.5 sm:gap-2">
+          <Icon name="tune" size={14} className="text-tertiary shrink-0" />
           <span>
             Filter applied:{" "}
             <span className="font-bold text-on-surface">
