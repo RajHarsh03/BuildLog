@@ -40,26 +40,27 @@ export default async function ProjectsPage() {
               <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight mb-1">
                 Things I&apos;ve Built
               </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+              <p className="font-body-lg text-body-md md:text-body-lg text-on-surface-variant leading-relaxed">
                 A curated archive of side projects, developer tools, open-source libraries, and
                 experiments built by {author.name}. All crafted from scratch with an emphasis on
                 runtime efficiency, tactile interfaces, and production resilience.
               </p>
             </div>
-            <div className="flex items-center gap-3 bg-surface-container-low p-2 rounded-lg shrink-0 border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)]">
-              <div className="flex flex-col px-3 py-1 bg-surface-container-lowest rounded border border-on-surface">
+            {/* Stats: mobile = full-width 2-col panel (no dead space), desktop = compact right-aligned */}
+            <div className="grid w-full shrink-0 grid-cols-2 gap-3 bg-surface-container-low p-2 rounded-lg border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] lg:flex lg:w-auto lg:items-center">
+              <div className="flex flex-col items-center lg:items-start px-3 py-1.5 lg:py-1 bg-surface-container-lowest rounded border border-on-surface">
                 <span className="font-mono-code text-label-sm text-on-surface-variant uppercase">
                   Projects
                 </span>
-                <span className="font-mono-code text-headline-sm font-bold text-on-surface">
+                <span className="font-mono-code text-headline-md lg:text-headline-sm font-bold text-on-surface">
                   {counts.all}
                 </span>
               </div>
-              <div className="flex flex-col px-3 py-1 bg-surface-container-lowest rounded border border-on-surface">
+              <div className="flex flex-col items-center lg:items-start px-3 py-1.5 lg:py-1 bg-surface-container-lowest rounded border border-on-surface">
                 <span className="font-mono-code text-label-sm text-on-surface-variant uppercase">
                   Active
                 </span>
-                <span className="font-mono-code text-headline-sm font-bold text-primary">
+                <span className="font-mono-code text-headline-md lg:text-headline-sm font-bold text-primary">
                   {counts.active}
                 </span>
               </div>
