@@ -11,6 +11,9 @@ function toSummary(project: Project): ProjectSummary {
   return rest;
 }
 
+/** Statuses visible on the public site. `archived` is private, like post drafts. */
+const PUBLIC_STATUSES: ProjectStatus[] = ["active", "shipped"];
+
 async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
   let slug = slugify(base) || "project";
   let n = 1;
@@ -25,7 +28,10 @@ async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
 
 async function getProjectsUncached(status?: ProjectStatus | "all"): Promise<ProjectSummary[]> {
   await dbConnect();
-  const filter = status && status !== "all" ? { status } : {};
+  // Archived projects never surface publicly, even when explicitly asked for.
+  if (status === "archived") return [];
+  const filter =
+    status && status !== "all" ? { status } : { status: { $in: PUBLIC_STATUSES } };
   const docs = await ProjectModel.find(filter)
     .sort({ featured: -1, updatedAt: -1 })
     .lean();
@@ -44,6 +50,7 @@ export async function searchProjects(q: string, limit = 5): Promise<ProjectSumma
   const term = q.trim();
   if (!term) return [];
   const docs = await ProjectModel.find({
+    status: { $in: PUBLIC_STATUSES },
     $or: [
       { name: { $regex: term, $options: "i" } },
       { description: { $regex: term, $options: "i" } },
@@ -58,12 +65,14 @@ export async function searchProjects(q: string, limit = 5): Promise<ProjectSumma
 
 async function getFeaturedProjectUncached(): Promise<ProjectSummary | null> {
   await dbConnect();
-  // The starred project wins regardless of status (spotlight follows the star);
+  // The starred project wins regardless of ship status (spotlight follows the star);
   // otherwise fall back to the most recently updated active project.
+  // Archived projects are excluded — a featured-but-archived build disappears publicly.
   const doc =
-    (await ProjectModel.findOne({ featured: true })
+    (await ProjectModel.findOne({ featured: true, status: { $in: PUBLIC_STATUSES } })
       .sort({ updatedAt: -1 })
-      .lean()) || (await ProjectModel.findOne({ status: "active" }).sort({ updatedAt: -1 }).lean());
+      .lean()) ||
+    (await ProjectModel.findOne({ status: "active" }).sort({ updatedAt: -1 }).lean());
   return doc ? toSummary(serializeProject(doc as never)) : null;
 }
 
@@ -75,7 +84,8 @@ export const getFeaturedProject = unstable_cache(
 
 async function getProjectBySlugUncached(slug: string): Promise<Project | null> {
   await dbConnect();
-  const doc = await ProjectModel.findOne({ slug }).lean();
+  // Archived slugs 404 publicly (same contract as unpublished posts).
+  const doc = await ProjectModel.findOne({ slug, status: { $in: PUBLIC_STATUSES } }).lean();
   return doc ? serializeProject(doc as never) : null;
 }
 
@@ -90,10 +100,10 @@ export async function getProjectById(id: string): Promise<Project | null> {
   return doc ? serializeProject(doc as never) : null;
 }
 
-/** All project slugs — used to prerender project pages at build time. */
+/** Public project slugs — used to prerender project pages at build time. */
 export async function getAllProjectSlugs(): Promise<string[]> {
   await dbConnect();
-  const docs = await ProjectModel.find({}).select("slug").lean();
+  const docs = await ProjectModel.find({ status: { $in: PUBLIC_STATUSES } }).select("slug").lean();
   return docs.map((d) => d.slug);
 }
 
@@ -111,8 +121,9 @@ async function getProjectStatusCountsUncached(): Promise<Record<string, number>>
   const counts: Record<string, number> = { all: 0, active: 0, shipped: 0, archived: 0 };
   for (const r of rows) {
     counts[r._id] = r.count;
-    counts.all += r.count;
   }
+  // Public "all" excludes archived.
+  counts.all = counts.active + counts.shipped;
   return counts;
 }
 
