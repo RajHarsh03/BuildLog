@@ -1,4 +1,4 @@
-import { Icon } from "@/components/shared/Icon";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { AboutForm } from "@/components/admin/AboutForm";
 import { getAboutContent, DEFAULT_ABOUT } from "@/lib/content/about";
 
@@ -13,15 +13,15 @@ export default async function AdminAboutPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs
+        homeLabel="Dashboard"
+        homeHref="/admin"
+        items={[{ label: "About" }]}
+      />
       <div>
-        <h1 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface font-semibold tracking-tight flex items-center gap-2">
-          <Icon name="person" size={24} />
-          About page
+        <h1 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface font-semibold tracking-tight">
+          About
         </h1>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-          Edit the public About page: intro paragraph, journey milestones and the
-          skills toolbox.
-        </p>
       </div>
 
       <AboutForm initial={about} />

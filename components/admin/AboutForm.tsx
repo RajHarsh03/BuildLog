@@ -49,6 +49,15 @@ export function AboutForm({ initial }: AboutFormProps) {
     setSkills((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
+  /** Reset the editor back to the last-saved server content. */
+  function discard() {
+    setIntro(initial.intro);
+    setJourney(initial.journey.map((j) => ({ ...j, key: nextKey() })));
+    setSkills(initial.skills.map((s) => ({ ...s, items: [...s.items], key: nextKey() })));
+    setError(null);
+    setSaved(false);
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -146,13 +155,34 @@ export function AboutForm({ initial }: AboutFormProps) {
           {journey.map((j) => (
             <div
               key={j.key}
-              className="grid grid-cols-[auto_110px_1fr_auto] gap-3 items-start p-3 bg-surface-container-lowest border-2 border-on-surface/20 rounded"
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 items-start p-3 bg-surface-container-lowest border-2 border-on-surface/20 rounded sm:grid-cols-[auto_110px_minmax(0,1fr)_auto] sm:gap-3"
             >
+              <input
+                className="w-full min-w-0 px-3 py-2 bg-surface-container-lowest border-2 border-on-surface rounded font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:shadow-[3px_3px_0px_0px_var(--color-ink)] transition-shadow col-start-1 row-start-1 sm:col-start-2 sm:row-start-1"
+                value={j.year}
+                onChange={(e) => patchJourney(j.key, { year: e.target.value })}
+                placeholder="2026"
+                aria-label="Year"
+              />
+              <input
+                className="w-full min-w-0 px-3 py-2 bg-surface-container-lowest border-2 border-on-surface rounded font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:shadow-[3px_3px_0px_0px_var(--color-ink)] transition-shadow col-start-2 row-start-1 sm:col-start-3 sm:row-start-1"
+                value={j.title}
+                onChange={(e) => patchJourney(j.key, { title: e.target.value })}
+                placeholder="Milestone title"
+                aria-label="Title"
+              />
+              <textarea
+                className="w-full px-3 py-2 bg-surface-container-lowest border-2 border-on-surface rounded font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:shadow-[3px_3px_0px_0px_var(--color-ink)] transition-shadow min-h-[70px] resize-y col-start-1 col-span-2 row-start-2 sm:col-start-3 sm:col-span-1 sm:row-start-2"
+                value={j.body}
+                onChange={(e) => patchJourney(j.key, { body: e.target.value })}
+                placeholder="What happened this year?"
+                aria-label="Description"
+              />
               <button
                 type="button"
                 title={j.featured ? "Unstar (hide from About page)" : "Star (show on About page)"}
                 onClick={() => patchJourney(j.key, { featured: !j.featured })}
-                className="p-1.5 hover:bg-surface-container rounded transition-colors"
+                className="p-1.5 hover:bg-surface-container rounded transition-colors self-center col-start-1 row-start-3 justify-self-start sm:col-start-1 sm:row-start-1 sm:self-start sm:justify-self-auto"
               >
                 <Icon
                   name={j.featured ? "star" : "star_border"}
@@ -161,36 +191,11 @@ export function AboutForm({ initial }: AboutFormProps) {
                   className={j.featured ? "text-badge-amber-ink" : "text-on-surface-variant"}
                 />
               </button>
-              <div className="space-y-2">
-                <input
-                  className={inputClass}
-                  value={j.year}
-                  onChange={(e) => patchJourney(j.key, { year: e.target.value })}
-                  placeholder="2026"
-                  aria-label="Year"
-                />
-              </div>
-              <div className="space-y-2">
-                <input
-                  className={inputClass}
-                  value={j.title}
-                  onChange={(e) => patchJourney(j.key, { title: e.target.value })}
-                  placeholder="Milestone title"
-                  aria-label="Title"
-                />
-                <textarea
-                  className={clsx(inputClass, "min-h-[70px] resize-y")}
-                  value={j.body}
-                  onChange={(e) => patchJourney(j.key, { body: e.target.value })}
-                  placeholder="What happened this year?"
-                  aria-label="Description"
-                />
-              </div>
               <button
                 type="button"
                 title="Remove milestone"
                 onClick={() => setJourney((rows) => rows.filter((r) => r.key !== j.key))}
-                className="p-1.5 text-on-surface-variant hover:text-[#991B1B] hover:bg-[#FEE2E2] rounded transition-colors"
+                className="p-1.5 self-center text-on-surface-variant hover:text-[#991B1B] hover:bg-[#FEE2E2] rounded transition-colors col-start-2 row-start-3 justify-self-end sm:col-start-4 sm:row-start-1 sm:self-start sm:justify-self-auto"
               >
                 <Icon name="delete" size={20} />
               </button>
@@ -198,19 +203,21 @@ export function AboutForm({ initial }: AboutFormProps) {
           ))}
         </div>
 
-        <button
-          type="button"
-          className={ghostBtnClass}
-          onClick={() =>
-            setJourney((rows) => [
-              ...rows,
-              { key: nextKey(), year: "", title: "", body: "", featured: false },
-            ])
-          }
-        >
-          <Icon name="add" size={16} />
-          Add milestone
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className={ghostBtnClass}
+            onClick={() =>
+              setJourney((rows) => [
+                ...rows,
+                { key: nextKey(), year: "", title: "", body: "", featured: false },
+              ])
+            }
+          >
+            <Icon name="add" size={16} />
+            Add milestone
+          </button>
+        </div>
       </div>
 
       {/* Skills */}
@@ -229,34 +236,24 @@ export function AboutForm({ initial }: AboutFormProps) {
           {skills.map((s) => (
             <div
               key={s.key}
-              className="space-y-2 p-3 bg-surface-container-lowest border-2 border-on-surface/20 rounded"
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 p-3 bg-surface-container-lowest border-2 border-on-surface/20 rounded sm:grid-cols-[minmax(0,1fr)_130px_auto] sm:gap-2"
             >
-              <div className="grid grid-cols-[1fr_130px_auto] gap-2">
-                <input
-                  className={inputClass}
-                  value={s.group}
-                  onChange={(e) => patchSkill(s.key, { group: e.target.value })}
-                  placeholder="Group name"
-                  aria-label="Group name"
-                />
-                <input
-                  className={inputClass}
-                  value={s.icon}
-                  onChange={(e) => patchSkill(s.key, { icon: e.target.value })}
-                  placeholder="icon"
-                  aria-label="Icon name"
-                />
-                <button
-                  type="button"
-                  title="Remove group"
-                  onClick={() => setSkills((rows) => rows.filter((r) => r.key !== s.key))}
-                  className="p-1.5 self-center text-on-surface-variant hover:text-[#991B1B] hover:bg-[#FEE2E2] rounded transition-colors"
-                >
-                  <Icon name="delete" size={20} />
-                </button>
-              </div>
               <input
-                className={inputClass}
+                className={clsx(inputClass, "col-start-1 row-start-1 sm:col-start-1 sm:row-start-1")}
+                value={s.group}
+                onChange={(e) => patchSkill(s.key, { group: e.target.value })}
+                placeholder="Group name"
+                aria-label="Group name"
+              />
+              <input
+                className={clsx(inputClass, "col-start-2 row-start-1 sm:col-start-2 sm:row-start-1")}
+                value={s.icon}
+                onChange={(e) => patchSkill(s.key, { icon: e.target.value })}
+                placeholder="icon"
+                aria-label="Icon name"
+              />
+              <input
+                className={clsx(inputClass, "col-start-1 col-span-2 row-start-2 sm:col-start-1 sm:col-span-3 sm:row-start-2")}
                 value={s.items.join(", ")}
                 onChange={(e) =>
                   patchSkill(s.key, { items: e.target.value.split(",") })
@@ -264,33 +261,53 @@ export function AboutForm({ initial }: AboutFormProps) {
                 placeholder="TypeScript, Go, Rust"
                 aria-label="Skills (comma-separated)"
               />
+              <button
+                type="button"
+                title="Remove group"
+                onClick={() => setSkills((rows) => rows.filter((r) => r.key !== s.key))}
+                className="p-1.5 self-center justify-self-end text-on-surface-variant hover:text-[#991B1B] hover:bg-[#FEE2E2] rounded transition-colors col-start-2 row-start-3 sm:col-start-3 sm:row-start-1 sm:justify-self-auto"
+              >
+                <Icon name="delete" size={20} />
+              </button>
             </div>
           ))}
         </div>
 
-        <button
-          type="button"
-          className={ghostBtnClass}
-          onClick={() =>
-            setSkills((rows) => [
-              ...rows,
-              { key: nextKey(), group: "", icon: "build", items: [] },
-            ])
-          }
-        >
-          <Icon name="add" size={16} />
-          Add group
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className={ghostBtnClass}
+            onClick={() =>
+              setSkills((rows) => [
+                ...rows,
+                { key: nextKey(), group: "", icon: "build", items: [] },
+              ])
+            }
+          >
+            <Icon name="add" size={16} />
+            Add group
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Footer actions: mobile = discard left / save right, desktop = both right */}
+      <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
+        <button
+          type="button"
+          onClick={discard}
+          disabled={saving}
+          className="inline-flex items-center gap-1 sm:gap-2 px-2.5 py-1.5 sm:px-5 sm:py-3 bg-surface-container-lowest text-on-surface-variant hover:text-[#991B1B] font-mono-code text-[10px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-60 whitespace-nowrap"
+        >
+          <Icon name="restart_alt" size={15} />
+          <span>Discard changes</span>
+        </button>
         <button
           type="submit"
           disabled={saving || !intro.trim()}
-          className="inline-flex items-center gap-2 px-5 py-3 bg-primary-container text-on-primary-container font-mono-code text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-60 disabled:pointer-events-none"
+          className="inline-flex items-center gap-1 sm:gap-2 px-2.5 py-1.5 sm:px-5 sm:py-3 bg-primary-container text-on-primary-container font-mono-code text-[10px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
         >
-          <Icon name={saving ? "hourglass_top" : "save"} size={18} />
-          <span>{saving ? "Saving..." : "Save about page"}</span>
+          <Icon name={saving ? "hourglass_top" : "save"} size={15} />
+          <span>{saving ? "Saving..." : "Save changes"}</span>
         </button>
       </div>
     </form>
