@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { MarkdownPreview } from "@/components/admin/MarkdownPreview";
+import { SelectDropdown } from "@/components/admin/SelectDropdown";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectStatus } from "@/types/project";
 
@@ -135,16 +136,16 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
           {/* Case-study editor */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={cn(labelClass, "mb-0")}>Case study (MDX)</span>
-              <div className="flex items-center gap-1">
+            <div className="flex flex-nowrap items-center justify-between gap-2 mb-1.5">
+              <span className={cn(labelClass, "mb-0 truncate text-[10px] sm:text-label-sm")}>Case study (MDX)</span>
+              <div className="flex items-center gap-1 shrink-0">
                 {(["write", "preview"] as const).map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setTab(t)}
                     className={cn(
-                      "px-2.5 py-1 font-mono-code text-label-sm font-bold uppercase rounded border-2 transition-all",
+                      "px-2 py-0.5 sm:px-2.5 sm:py-1 font-mono-code text-[9px] sm:text-label-sm font-bold uppercase rounded border-2 transition-all whitespace-nowrap",
                       tab === t
                         ? "bg-on-surface text-surface border-on-surface"
                         : "bg-surface-container-lowest text-on-surface-variant border-on-surface hover:text-on-surface",
@@ -187,26 +188,29 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <label className={labelClass} htmlFor="status">
                 Status
               </label>
-              <select
-                id="status"
-                className={inputClass}
+              <SelectDropdown
+                ariaLabel="Status"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-              >
-                <option value="active">Active</option>
-                <option value="shipped">Shipped</option>
-                <option value="archived">Archived</option>
-              </select>
+                options={[
+                  { value: "active", label: "Active" },
+                  { value: "shipped", label: "Shipped" },
+                  { value: "archived", label: "Archived" },
+                ]}
+                onChange={(v) => setStatus(v as ProjectStatus)}
+              />
             </div>
 
-            <label className="flex items-center gap-2.5 cursor-pointer">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
               <input
                 type="checkbox"
                 checked={featured}
                 onChange={(e) => setFeatured(e.target.checked)}
-                className="w-4 h-4 accent-[#10B981]"
+                className="peer sr-only"
               />
-              <span className="font-body-md text-body-md text-on-surface">
+              <span className="w-5 h-5 grid place-items-center rounded border-2 border-on-surface bg-surface-container-lowest text-transparent shadow-[2px_2px_0px_0px_var(--color-ink)] peer-checked:bg-mint-soft peer-checked:text-mint-ink peer-checked:shadow-none transition-all">
+                <Icon name="check" size={14} weight={700} />
+              </span>
+              <span className="font-mono-code text-[13px] font-bold uppercase tracking-wider text-on-surface">
                 Feature this project
               </span>
             </label>
@@ -250,25 +254,25 @@ export function ProjectForm({ project }: ProjectFormProps) {
               />
             </div>
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-container text-on-primary font-mono-code text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {saving ? (
-                  <Icon name="progress_activity" size={18} className="animate-spin" />
-                ) : (
-                  <Icon name="save" size={18} />
-                )}
-                <span>{saving ? "Saving…" : "Save project"}</span>
-              </button>
+            <div className="grid grid-cols-2 items-center gap-2 sm:gap-3 pt-2">
               <Link
                 href="/admin/projects"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface-variant font-mono-code text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface hover:text-on-surface transition-all"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-surface-container-lowest text-on-surface-variant font-mono-code text-[10px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface hover:text-on-surface transition-all whitespace-nowrap"
               >
                 Cancel
               </Link>
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-primary-container text-on-primary font-mono-code text-[10px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {saving ? (
+                  <Icon name="progress_activity" size={15} className="animate-spin" />
+                ) : (
+                  <Icon name="save" size={15} />
+                )}
+                <span>{saving ? "Saving…" : "Save project"}</span>
+              </button>
             </div>
           </div>
         </aside>
