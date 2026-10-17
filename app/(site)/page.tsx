@@ -54,23 +54,23 @@ export default async function HomePage() {
               I write about software engineering, distributed systems, side projects, and the hard
               lessons learned while shipping code in production.
             </p>
-            <div className="flex flex-wrap items-center gap-4 pt-2 w-full sm:w-auto">
+            <div className="flex flex-nowrap items-center gap-2 sm:gap-4 pt-2 w-full sm:w-auto">
               <Link
-                className="px-6 py-3 bg-primary-container text-on-primary font-mono-code text-mono-code font-bold uppercase tracking-wider border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all inline-flex items-center gap-2"
+                className="flex-1 sm:flex-none justify-center whitespace-nowrap px-2 sm:px-6 sm:py-3 py-2.5 text-[10px] sm:text-mono-code bg-primary-container text-on-primary font-mono-code font-bold uppercase tracking-wide sm:tracking-wider border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all inline-flex items-center gap-1.5 sm:gap-2"
                 href="/articles"
               >
                 <span>Read Articles</span>
-                <Icon name="arrow_forward" size={18} />
+                <Icon name="arrow_forward" size={16} />
               </Link>
               <Link
-                className="px-6 py-3 bg-surface-container-lowest text-on-surface font-mono-code text-mono-code font-bold uppercase tracking-wider border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all inline-flex items-center gap-2"
+                className="flex-1 sm:flex-none justify-center whitespace-nowrap px-2 sm:px-6 sm:py-3 py-2.5 text-[10px] sm:text-mono-code bg-surface-container-lowest text-on-surface font-mono-code font-bold uppercase tracking-wide sm:tracking-wider border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all inline-flex items-center gap-1.5 sm:gap-2"
                 href="/projects"
               >
                 <span>View Projects</span>
-                <Icon name="terminal" size={18} />
+                <Icon name="terminal" size={16} />
               </Link>
             </div>
-            <div className="pt-4 border-t-2 border-on-surface w-full max-w-xl flex flex-wrap items-center gap-y-2 gap-x-4 font-mono-code text-mono-code text-on-surface-variant">
+            <div className="hidden md:flex pt-4 border-t-2 border-on-surface w-full max-w-xl flex-wrap items-center gap-y-2 gap-x-4 font-mono-code text-mono-code text-on-surface-variant">
               <div className="flex items-center gap-1.5 font-bold text-on-surface">
                 <span className="w-1.5 h-1.5 bg-primary-container rounded-full" />
                 <span>{stats.published} Articles Published</span>
@@ -88,8 +88,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Right Column: Developer Workbench Terminal */}
-          <div className="lg:col-span-5 relative min-w-0 mt-4 lg:mt-10 lg:-translate-x-6">
+          {/* Right Column: Developer Workbench Terminal - hidden on phones, shown on tablet+ */}
+          <div className="hidden md:block lg:col-span-5 relative min-w-0 mt-4 lg:mt-10 lg:-translate-x-6">
             <div className="hidden sm:flex absolute -top-4 right-1 z-20 px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] rounded font-label-sm text-label-sm uppercase font-bold items-center gap-1.5 rotate-2">
               <span className="w-2 h-2 rounded-full bg-tertiary-container" />
               <span>99.98% Uptime</span>
@@ -198,7 +198,7 @@ export default async function HomePage() {
               </p>
             </div>
             <Link
-              className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
               href="/articles"
             >
               <span>View all articles</span>
@@ -238,7 +238,7 @@ export default async function HomePage() {
                 </p>
               </div>
               <Link
-                className="inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
+                className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
                 href="/projects"
               >
                 <span>View all projects</span>
