@@ -23,7 +23,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ProjectsPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+export default async function ProjectsPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const tech = first(sp.tech) ?? "";
   const [projects, counts] = await Promise.all([
     getProjects("all").catch(() => []),
     getProjectStatusCounts().catch(() => ({ all: 0, active: 0, shipped: 0, archived: 0 })),
@@ -67,7 +73,7 @@ export default async function ProjectsPage() {
             </div>
           </div>
 
-          <ProjectsBrowser projects={projects} counts={counts} />
+          <ProjectsBrowser projects={projects} counts={counts} initialTech={tech} />
         </header>
 
         {/* Bottom CTA: collaboration invitation */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import type { ProjectSummary, ProjectStatus } from "@/types/project";
@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 interface ProjectsBrowserProps {
   projects: ProjectSummary[];
   counts: Record<string, number>;
+  /** Tech preset from /projects?tech=X - set by clickable case-study chips. */
+  initialTech?: string;
 }
 
 const FILTERS: { key: ProjectStatus | "all"; label: string; short: string; dot?: string }[] = [
@@ -18,9 +20,19 @@ const FILTERS: { key: ProjectStatus | "all"; label: string; short: string; dot?:
   { key: "archived", label: "Archived / Learned", short: "Archived", dot: "bg-outline" },
 ];
 
-export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
+export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrowserProps) {
   const [filter, setFilter] = useState<ProjectStatus | "all">("all");
-  const visible = filter === "all" ? projects : projects.filter((p) => p.status === filter);
+  const [tech, setTech] = useState(initialTech ?? "");
+
+  // /projects?tech=A -> ?tech=B keeps this client tree mounted; resync.
+  useEffect(() => setTech(initialTech ?? ""), [initialTech]);
+
+  const term = tech.trim().toLowerCase();
+  const visible = projects.filter(
+    (p) =>
+      (filter === "all" || p.status === filter) &&
+      (!term || p.technologies.some((t) => t.toLowerCase().includes(term))),
+  );
 
   return (
     <>
@@ -69,6 +81,18 @@ export function ProjectsBrowser({ projects, counts }: ProjectsBrowserProps) {
               {visible.length})
             </span>
           </span>
+          {term && (
+            <button
+              type="button"
+              onClick={() => setTech("")}
+              aria-label={`Clear tech filter ${tech}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-fixed text-on-primary-fixed border-2 border-on-surface rounded font-bold whitespace-nowrap hover:text-primary transition-colors"
+            >
+              <Icon name="label" size={12} />
+              {tech}
+              <Icon name="close" size={12} />
+            </button>
+          )}
         </div>
       </div>
 

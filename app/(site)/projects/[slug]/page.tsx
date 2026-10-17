@@ -64,10 +64,10 @@ export default async function ProjectPage({ params }: { params: Params }) {
             items={[{ label: "Projects", href: "/projects" }, { label: project.name }]}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-start">
             <StatusBadge status={project.status} label={project.status} size="sm" />
             {project.featured && (
-              <span className="font-mono-code text-label-sm text-primary font-bold ml-auto">
+              <span className="font-mono-code text-label-sm text-primary font-bold ml-auto sm:ml-2">
                 Featured Build
               </span>
             )}
@@ -80,14 +80,19 @@ export default async function ProjectPage({ params }: { params: Params }) {
             {project.description}
           </p>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Same label glyph treatment as the article tags row */}
+            <span className="inline-flex items-center justify-center w-7 h-7 text-on-surface-variant">
+              <Icon name="label" size={25} />
+            </span>
             {project.technologies.map((tech) => (
-              <span
+              <Link
                 key={tech}
-                className="font-mono-code text-label-sm px-2.5 py-1 bg-surface-container text-on-surface rounded border-2 border-on-surface shadow-[1px_1px_0px_0px_var(--color-ink)] font-bold"
+                className="font-mono-code text-label-sm px-2.5 py-1 bg-surface-container text-on-surface rounded border-2 border-on-surface shadow-[1px_1px_0px_0px_var(--color-ink)] font-bold hover:text-primary hover:border-primary transition-colors"
+                href={`/projects?tech=${encodeURIComponent(tech)}`}
               >
                 {tech}
-              </span>
+              </Link>
             ))}
           </div>
 
