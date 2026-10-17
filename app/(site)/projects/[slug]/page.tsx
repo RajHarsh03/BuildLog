@@ -64,19 +64,19 @@ export default async function ProjectPage({ params }: { params: Params }) {
             items={[{ label: "Projects", href: "/projects" }, { label: project.name }]}
           />
 
-          <div className="flex flex-wrap items-center gap-3">
-            <StatusBadge status={project.status} label={project.status} />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <StatusBadge status={project.status} label={project.status} size="sm" />
             {project.featured && (
-              <span className="font-mono-code text-label-sm text-primary font-bold">
+              <span className="font-mono-code text-label-sm text-primary font-bold ml-auto">
                 Featured Build
               </span>
             )}
           </div>
 
-          <h1 className="font-display text-display-mobile md:text-display text-on-surface tracking-tight">
+          <h1 className="font-display text-[36px] leading-[44px] sm:text-display-mobile md:text-display text-on-surface tracking-tight">
             {project.name}
           </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="font-body-lg text-[16px] leading-[26px] sm:text-body-lg text-on-surface-variant max-w-3xl">
             {project.description}
           </p>
 
@@ -91,26 +91,27 @@ export default async function ProjectPage({ params }: { params: Params }) {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          {/* Live Demo + GitHub: equal-width pair (matching grid tracks), content-sized and left-aligned - never full width */}
+          <div className="inline-grid grid-cols-2 gap-1.5 sm:gap-3">
             {project.liveUrl && (
               <a
-                className="px-4 py-2.5 bg-primary-container text-on-primary-container font-mono-code text-label-md font-bold rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center gap-2"
+                className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-primary-container text-on-primary-container font-mono-code text-[11px] sm:text-label-md font-bold rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap"
                 href={project.liveUrl}
                 rel="noopener noreferrer"
                 target="_blank"
               >
                 <span>Live Demo</span>
-                <Icon name="arrow_outward" size={16} />
+                <Icon name="arrow_outward" size={14} />
               </a>
             )}
             {project.githubUrl && (
               <a
-                className="px-4 py-2.5 bg-surface-container-lowest text-on-surface font-mono-code text-label-md font-bold rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center gap-2"
+                className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-surface-container-lowest text-on-surface font-mono-code text-[11px] sm:text-label-md font-bold rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_var(--color-ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap"
                 href={project.githubUrl}
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <Icon name="code" size={16} />
+                <Icon name="code" size={14} />
                 <span>GitHub</span>
               </a>
             )}
