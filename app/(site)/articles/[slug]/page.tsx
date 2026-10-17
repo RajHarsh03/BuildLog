@@ -218,6 +218,9 @@ export default async function ArticlePage({ params }: { params: Params }) {
           <AuthorChip url={url} title={post.title} />
         </div>
 
+        {/* Site-native comments backed by MongoDB; readers sign in with GitHub */}
+        <Comments postId={post._id} />
+
         {/* Prev / next */}
         {(adjacent.prev || adjacent.next) && (
           <nav className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -253,9 +256,6 @@ export default async function ArticlePage({ params }: { params: Params }) {
             )}
           </nav>
         )}
-
-        {/* Site-native comments backed by MongoDB; readers sign in with GitHub */}
-        <Comments postId={post._id} />
 
         {/* Footer: related posts */}
         <footer className="mt-16 pt-12 border-t-2 border-on-surface space-y-12">
