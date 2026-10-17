@@ -4,6 +4,7 @@ import { CurrentlyBuilding } from "@/components/home/CurrentlyBuilding";
 import { TypingStatus } from "@/components/home/TypingStatus";
 import { FeaturedArticle } from "@/components/blog/FeaturedArticle";
 import { ArticleCard } from "@/components/blog/ArticleCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { getFeaturedPost, getLatestPosts, getPostStats } from "@/lib/content/posts";
 import { getFeaturedProject, getProjects } from "@/lib/content/projects";
@@ -31,7 +32,7 @@ export default async function HomePage() {
     .slice(0, 2);
 
   return (
-    <div className="w-full px-5 sm:px-8 py-8 overflow-x-clip">
+    <div className="w-full px-5 sm:px-8 pt-8 overflow-x-clip">
       <div className="flex flex-col w-full max-w-7xl mx-auto space-y-12 sm:space-y-16">
         {/* SECTION 1: EDITORIAL HERO & WORKBENCH */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
@@ -215,14 +216,19 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              No articles published yet. Run <code>npm run seed</code> to populate the journal.
-            </p>
+            <EmptyState
+              icon="article"
+              label="Journal // empty"
+              title="No articles published yet"
+              description="Build logs, postmortems, and field notes will appear here the moment they go live."
+            />
           )}
         </section>
 
-        {/* SECTION 4: RECENT PROJECTS */}
-        {recentProjects.length > 0 && (
+        {/* SECTION 4: RECENT PROJECTS — always shown while there is nothing to
+            list (empty state); skipped only when the featured card above already
+            covers the single public project. */}
+        {(allProjects.length === 0 || recentProjects.length > 0) && (
           <section className="w-full space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
               <div className="space-y-1">
@@ -245,12 +251,21 @@ export default async function HomePage() {
                 <Icon name="arrow_forward" size={18} />
               </Link>
             </div>
-            {/* Same 12-col grid as the projects page; ProjectCard spans 6 each. */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {recentProjects.map((p) => (
-                <ProjectCard key={p._id} project={p} />
-              ))}
-            </div>
+            {recentProjects.length > 0 ? (
+              /* Same 12-col grid as the projects page; ProjectCard spans 6 each. */
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                {recentProjects.map((p) => (
+                  <ProjectCard key={p._id} project={p} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon="handyman"
+                label="Workbench // quiet"
+                title="No public projects right now"
+                description="Everything in the lab is archived for now. Active and shipped builds will show up here again."
+              />
+            )}
           </section>
         )}
       </div>
