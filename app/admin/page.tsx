@@ -69,19 +69,19 @@ export default async function AdminDashboardPage() {
             Overview of your journal. Build. Learn. Document.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Link
             href="/admin/posts/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-container text-on-primary font-mono-code text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-primary-container text-on-primary font-mono-code text-[11px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all whitespace-nowrap"
           >
-            <Icon name="add" size={18} />
+            <Icon name="add" size={16} />
             <span>New post</span>
           </Link>
           <Link
             href="/admin/projects/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface font-mono-code text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2.5 bg-surface-container-lowest text-on-surface font-mono-code text-[11px] sm:text-label-md font-bold uppercase tracking-wider rounded border-2 border-on-surface shadow-[3px_3px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all whitespace-nowrap"
           >
-            <Icon name="add" size={18} />
+            <Icon name="add" size={16} />
             <span>New project</span>
           </Link>
         </div>
@@ -153,21 +153,25 @@ export default async function AdminDashboardPage() {
                 <li key={post._id}>
                   <Link
                     href={`/admin/posts/${post._id}/edit`}
-                    className="flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-surface-container-low transition-colors"
+                    className="flex items-center justify-between gap-2 sm:gap-4 px-3 py-3 sm:px-5 sm:py-3.5 hover:bg-surface-container-low transition-colors"
                   >
                     <div className="min-w-0">
-                      <div className="font-headline-sm text-headline-sm font-semibold text-on-surface truncate">
+                      <div className="font-headline-sm text-[15px] sm:text-headline-sm font-semibold text-on-surface truncate">
                         {post.title}
                       </div>
-                      <div className="font-mono-code text-label-sm text-on-surface-variant mt-0.5">
+                      <div className="font-mono-code text-[10px] sm:text-label-sm text-on-surface-variant mt-0.5 truncate">
                         {post.category} • {formatDate(post.updatedAt)}
                       </div>
                     </div>
-                    <div className="shrink-0 flex items-center gap-2">
+                    <div className="shrink-0 flex items-center gap-1.5 sm:gap-2">
                       {post.featured && (
-                        <Icon name="star" fill size={16} className="text-[#92400E]" />
+                        <Icon name="star" fill size={15} className="text-[#92400E]" />
                       )}
-                      <StatusBadge status={post.status} pulse={false} />
+                      <StatusBadge
+                        status={post.status}
+                        pulse={false}
+                        className="px-1.5 py-0.5 text-[9px] gap-1 sm:px-2.5 sm:py-1 sm:text-label-sm sm:gap-1.5"
+                      />
                     </div>
                   </Link>
                 </li>
