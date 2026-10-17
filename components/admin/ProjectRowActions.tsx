@@ -15,13 +15,14 @@ interface ProjectRowActionsProps {
 const iconBtn =
   "p-1.5 rounded border-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed transition-all";
 
-/** Inline mutations for a project row: ship/activate, feature, edit, delete. */
+/** Inline mutations for a project row: ship/activate, archive/restore, feature, edit, delete. */
 export function ProjectRowActions({ id, status, featured }: ProjectRowActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
 
   const isActive = status === "active";
+  const isArchived = status === "archived";
 
   async function patch(body: Record<string, unknown>) {
     startTransition(async () => {
@@ -45,13 +46,28 @@ export function ProjectRowActions({ id, status, featured }: ProjectRowActionsPro
     <div className="flex items-center gap-1 shrink-0">
       <button
         type="button"
-        title={isActive ? "Mark as shipped" : "Mark as active"}
+        title={isArchived ? "Restore to active (unarchive)" : isActive ? "Mark as shipped" : "Mark as active"}
         disabled={isPending}
         onClick={() => patch({ status: isActive ? "shipped" : "active" })}
         className={iconBtn}
       >
-        <Icon name={isActive ? "inventory_2" : "rocket_launch"} size={18} />
+        <Icon
+          name={isArchived ? "unarchive" : isActive ? "inventory_2" : "rocket_launch"}
+          size={18}
+        />
       </button>
+
+      {!isArchived && (
+        <button
+          type="button"
+          title="Archive (hide from public site)"
+          disabled={isPending}
+          onClick={() => patch({ status: "archived" })}
+          className={iconBtn}
+        >
+          <Icon name="archive" size={18} />
+        </button>
+      )}
 
       <button
         type="button"
