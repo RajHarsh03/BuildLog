@@ -1,46 +1,59 @@
-# BuildLog — Personal Developer Journal
+<div align="center">
 
-> **Build. Learn. Document.**
-> A full-stack personal developer journal with a neo-brutalist design: public blog + project showcase, MDX-rendered articles with syntax highlighting and table of contents, GitHub-authenticated comment threads with owner moderation, and a password-less admin CMS secured by GitHub OAuth.
+# 🔨 BuildLog
 
-Built with **Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · MongoDB (Mongoose) · Auth.js v5 · MDX**.
+### Personal Developer Journal
 
----
+**Build. Learn. Document.** — MDX-rendered articles, GitHub-gated comments, and an OAuth-protected admin CMS in a neo-brutalist design system.
 
-## Table of Contents
+![Next.js 15](https://img.shields.io/badge/Next.js_15-000000?style=flat-square&logo=nextdotjs&logoColor=white)
+![React 19](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=111111)
+![TypeScript 5](https://img.shields.io/badge/TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind v4](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB_8-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![Auth.js v5](https://img.shields.io/badge/Auth.js_v5-GitHub_OAuth-7E22CE?style=flat-square)
+![License](https://img.shields.io/badge/License-Private-999999?style=flat-square)
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Environment Variables](#environment-variables)
-- [Setting Up GitHub OAuth](#setting-up-github-oauth)
-- [Setting Up MongoDB](#setting-up-mongodb)
-- [Available Scripts](#available-scripts)
-- [Project Structure](#project-structure)
-- [Routes](#routes)
-- [Admin CMS Guide](#admin-cms-guide)
-- [Content & MDX Pipeline](#content--mdx-pipeline)
-- [Comments System](#comments-system)
-- [Design System](#design-system)
-- [Build & Run in Production](#build--run-in-production)
-- [Deploying to Vercel](#deploying-to-vercel)
-- [Troubleshooting](#troubleshooting)
+**[🚀 Quick Start](#-quick-start) · [⚙️ Environment](#-environment-variables) · [🗺️ Routes & API](#-routes) · [🛠️ Admin CMS](#-admin-cms-guide) · [☁️ Deploy](#-deploying-to-vercel)**
+
+</div>
 
 ---
 
-## Features
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [🧰 Tech Stack](#-tech-stack)
+- [📋 Prerequisites](#-prerequisites)
+- [🚀 Quick Start](#-quick-start)
+- [⚙️ Environment Variables](#-environment-variables)
+- [🔑 Setting Up GitHub OAuth](#-setting-up-github-oauth)
+- [🗄️ Setting Up MongoDB](#-setting-up-mongodb)
+- [📜 Available Scripts](#-available-scripts)
+- [📁 Project Structure](#-project-structure)
+- [🗺️ Routes](#-routes)
+- [🛠️ Admin CMS Guide](#-admin-cms-guide)
+- [📝 Content & MDX Pipeline](#-content--mdx-pipeline)
+- [💬 Comments System](#-comments-system)
+- [🎨 Design System](#-design-system)
+- [📦 Build & Run in Production](#-build--run-in-production)
+- [☁️ Deploying to Vercel](#-deploying-to-vercel)
+- [🩺 Troubleshooting](#-troubleshooting)
+
+---
+
+## ✨ Features
 
 ### Public site
-- **Home** — an always-dark interactive hero terminal (a `const developer = {…}` object whose `status` line types itself out and loops), plus featured article, latest posts, "currently building" panel, and newsletter callout.
+- **Home** — featured article, latest posts, "currently building" panel, and newsletter callout.
 - **Articles** — filterable, paginated index (category + search) at `/articles`.
-- **Article detail** — server-rendered MDX with GitHub-flavored markdown, Shiki syntax highlighting in neo-brutalist terminal windows with copy buttons, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
-- **Comments** — fully custom, GitHub-gated comment threads at the bottom of every article (see [Comments System](#comments-system)).
+- **Article detail** — server-rendered MDX (GitHub-flavored markdown), Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
+- **Comments** — custom, GitHub-gated comment threads per article (see [Comments System](#-comments-system)).
 - **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus per-project case-study pages with clickable tech chips.
 - **About** — author bio, journey timeline, and toolbelt, all editable from the CMS.
-- **Skeleton loading** — route-level `loading.tsx` fallbacks pulse in place of the article/project lists and detail pages while DB queries stream, so slow navigations never show a blank screen.
-- **Dark mode** — a header toggle flips the whole site between light and dark themes. The choice is stored in `localStorage` (`buildlog-theme`) and re-applied by an inline pre-paint script in the root layout, so the last-used theme survives reloads with no flash; first-time visitors follow their OS `prefers-color-scheme`.
-- **Command-palette search** — a header search button (or **Ctrl/Cmd+K** anywhere) opens a modal that searches across published posts and projects as you type, with arrow-key navigation, Enter to open, and Esc to close. Backed by a public `/api/search` endpoint.
+- **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
+- **Dark mode** — light/dark toggle persisted in `localStorage` (`buildlog-theme`) and applied before first paint; default is light.
+- **Command-palette search** — global search over published posts and projects (**Ctrl/Cmd+K**), backed by the public `/api/search` endpoint.
 - **SEO** — per-route metadata, Open Graph tags, canonical URLs, and JSON-LD (`Article` / `ProfilePage` / `ItemList`) on detail and index pages.
 
 ### Admin CMS (`/admin`)
@@ -49,7 +62,7 @@ Built with **Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v
 - Dashboard with content stats and quick actions.
 - Full **CRUD for posts and projects**: create, edit, publish/unpublish, feature/unfeature, archive, delete.
 - **About page editor** — bio, journey milestones, and skills, all managed from `/admin/about`.
-- **Comment moderation** (`/admin/comments`) — threads grouped by post, reply / one-time like / inline edit / cascade delete (see [Comments System](#comments-system)).
+- **Comment moderation** (`/admin/comments`) — threads grouped by post, reply / one-time like / inline edit / cascade delete (see [Comments System](#-comments-system)).
 - Markdown editor with **live client-side preview** tab.
 - Status workflow: posts `draft → published → archived`; projects `active → shipped`.
 - Fully **responsive** — mobile-optimised lists, forms, and an icon-only admin nav.
@@ -57,7 +70,7 @@ Built with **Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v
 
 ---
 
-## Tech Stack
+## 🧰 Tech Stack
 
 | Layer      | Technology |
 | ---------- | ---------- |
@@ -72,7 +85,7 @@ Built with **Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v
 
 ---
 
-## Prerequisites
+## 📋 Prerequisites
 
 - **Node.js ≥ 20** (LTS recommended) and npm
 - **MongoDB** — either a local server (`mongodb://127.0.0.1:27017`) or a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster
@@ -81,7 +94,7 @@ Built with **Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Clone the repository
 
@@ -117,7 +130,7 @@ cp .env.example .env.local
 Copy-Item .env.example .env.local
 ```
 
-Then edit `.env.local` — see [Environment Variables](#environment-variables) below.
+Then edit `.env.local` — see [Environment Variables](#-environment-variables) below.
 The minimum for browsing the public site is `MONGODB_URI`; the admin CMS additionally needs the four `AUTH_*` values.
 
 ### 4. Seed the database (optional but recommended)
@@ -140,7 +153,7 @@ The admin CMS lives at [http://localhost:3000/admin](http://localhost:3000/admin
 
 ---
 
-## Environment Variables
+## ⚙️ Environment Variables
 
 All variables are documented in [`.env.example`](.env.example).
 
@@ -164,7 +177,7 @@ Notes:
 
 ---
 
-## Setting Up GitHub OAuth
+## 🔑 Setting Up GitHub OAuth
 
 1. Go to **GitHub → Settings → Developer settings → [OAuth Apps](https://github.com/settings/developers)** → *New OAuth App*.
 2. Fill in:
@@ -180,7 +193,7 @@ For production, register a second OAuth App (or edit the existing one) with your
 
 ---
 
-## Setting Up MongoDB
+## 🗄️ Setting Up MongoDB
 
 ### Option A — Local server
 Install MongoDB Community Server, ensure the service is running, then use:
@@ -203,11 +216,11 @@ Auth.js collections (`users`, `accounts`, `sessions`, `verification_tokens`) are
 
 ---
 
-## Available Scripts
+## 📜 Available Scripts
 
 | Command | Description |
 | ------- | ----------- |
-| `npm run dev` | Start the Next.js dev server at `http://localhost:3000` |
+| `npm run dev` | Start the Next.js dev server with **Turbopack** at `http://localhost:3000` |
 | `npm run build` | Production build (type-safe routes, static/dynamic analysis) |
 | `npm run start` | Serve the production build (run `build` first) |
 | `npm run lint` | ESLint (`eslint-config-next`) |
@@ -216,7 +229,7 @@ Auth.js collections (`users`, `accounts`, `sessions`, `verification_tokens`) are
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 BuildLog/
@@ -240,10 +253,11 @@ BuildLog/
 │   │   └── comments/           #   Comment moderation
 │   ├── api/
 │   │   ├── auth/[...nextauth]/ #   Auth.js endpoint
-│   │   ├── posts/  [id]/       #   REST CRUD (Zod-validated, admin-only)
+│   │   ├── posts/ [id]/view/   #   REST CRUD (Zod-validated, admin-only) + view counter
 │   │   ├── projects/ [id]/     #   REST CRUD (Zod-validated, admin-only)
 │   │   ├── about/              #   About document (GET/PUT)
-│   │   └── comments/[id]/like/ #   Comments REST (public read, gated write, admin mod)
+│   │   ├── search/             #   Command-palette search (public)
+│   │   └── comments/ [id]/ like/ # Comments REST (public read, gated write, admin mod)
 │   ├── layout.tsx              # Root layout (fonts, global metadata)
 │   ├── globals.css             # Tailwind v4 @theme tokens + MDX styles
 │   └── not-found.tsx           # Root 404
@@ -255,32 +269,34 @@ BuildLog/
 │   ├── home/                   # CurrentlyBuilding, TypingStatus
 │   ├── shared/                 # Icon, Breadcrumbs, ThemeToggle, BackToTop
 │   └── admin/                  # Forms, row actions, nav, markdown preview,
-│                               #   SelectDropdown, AdminComments
+│                               #   SelectDropdown, AdminComments, LoginError
 ├── lib/
 │   ├── auth/                   # auth.ts, auth.config.ts (edge-safe), guard.ts
-│   ├── content/                # Query + CRUD helpers (posts, projects, about, comments)
+│   ├── content/                # Query + CRUD helpers (posts, projects, about, comments, featured)
 │   ├── db/                     # mongodb.ts (Mongoose), mongo-client.ts (driver), models/
 │   ├── mdx/render.ts           # compileMDX + TOC plugin + Shiki config
 │   └── utils.ts                # cn(), slugify(), formatDate(), readingTime…
+├── public/                     # Static assets (wordmark logo)
 ├── scripts/seed.ts             # Sample content loader (11 posts, 6 projects)
 ├── schemas/                    # Zod payloads (post, project, about)
 ├── types/                      # Post/Project/Comment/About types + next-auth augmentation
 ├── middleware.ts               # Edge auth guard for /admin/*
+├── .vscode/                    # Tailwind v4 lint suppression + extension recommendations
 ├── DESIGN.md                   # Neo-brutalist design specification
 └── .env.example                # Documented environment template
 ```
 
 ---
 
-## Routes
+## 🗺️ Routes
 
 ### Public
 | Route | Purpose |
 | ----- | ------- |
 | `/` | Home: featured article, latest posts, currently-building |
 | `/about` | Author bio, timeline, toolbelt |
-| `/articles` | Article index with category filter, search, pagination |
-| `/articles/[slug]` | Article detail: MDX body, TOC, share, comments, related posts |
+| `/articles` | Article index with category filter, search, pagination, and a recently-viewed strip |
+| `/articles/[slug]` | Article detail: MDX body, TOC, share, view tracking, comments, related posts |
 | `/projects` | Project browser with status/tech filters (`?tech=` deep links) |
 | `/projects/[slug]` | Project case study with MDX narrative |
 
@@ -309,6 +325,7 @@ BuildLog/
 ### Public API
 | Route | Methods |
 | ----- | ------- |
+| `/api/posts/[id]/view` | `POST` — increments a post's view count (public; the client de-dupes with a 30-minute cooldown) |
 | `/api/search?q=` | `GET` — returns up to 5 published posts + 5 projects matching the query (powers the command palette; no auth) |
 | `/api/comments?postId=` | `GET` (threaded comments for an article; no auth) · `POST` (comment/reply — **requires GitHub session**) |
 
@@ -316,7 +333,7 @@ Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; i
 
 ---
 
-## Admin CMS Guide
+## 🛠️ Admin CMS Guide
 
 1. Start the app with valid `MONGODB_URI` + `AUTH_*` variables.
 2. Visit `/admin` → you are redirected to `/login` → click **Continue with GitHub**.
@@ -332,7 +349,7 @@ Only `published` posts and their slugs appear on the public site; drafts and arc
 
 ---
 
-## Content & MDX Pipeline
+## 📝 Content & MDX Pipeline
 
 Article and project bodies are stored as **MDX strings in MongoDB** and compiled at request time by [`lib/mdx/render.ts`](lib/mdx/render.ts):
 
@@ -344,42 +361,43 @@ Supported markdown in the editor: headings, paragraphs, GFM tables, fenced code 
 
 ---
 
-## Comments System
+## 💬 Comments System
 
-A fully custom, MongoDB-backed comment engine — no third-party widgets. Comments live in the `comments` collection (`postId`, `parentId`, `body`, author snapshot, `likedBy`/`likedByNames`) and are exposed through `/api/comments*`.
+A MongoDB-backed comment engine — no third-party widgets. Comments live in the `comments` collection (`postId`, `parentId`, `body`, author snapshot, `likedBy`/`likedByNames`) and are exposed through `/api/comments*`.
 
 ### For readers (article pages)
-- **Strict GitHub gate** — signed-out visitors see a "join the discussion" banner with a sign-in button; the composer never renders (not even during session loading, which shows a skeleton instead).
-- Threaded replies with YouTube-style connector lines and a collapsible **Replies** toggle per thread.
+- **GitHub gate** — signed-out visitors see a sign-in banner; the composer only renders for authenticated GitHub users.
+- Threaded replies with a collapsible **Replies** toggle per thread.
 - The **3 newest threads** are shown; older discussion stays in the DB and the moderation queue.
-- Liked comments wear a **creator heart badge** on the author's avatar with a `♥ by @Harsh Raj` hover label.
-- Reader comments are **read-only** on the public site — no editing or deleting your own; moderation is admin-side.
+- Admin likes surface as a heart badge on the public comment.
+- Reader comments are **read-only** on the public site; moderation is admin-side.
 - Anti-spam: 60-second posting cooldown per user + Zod length validation (2–2000 chars).
 
 ### For the owner (`/admin/comments`)
-- Threads grouped per post in an accordion, **sorted by latest activity**, with a 7-day "active" window and an `Older (N)` toggle.
-- **Like** — admin-only, one-time, permanent (no unlike); mirrors as the public heart badge.
-- **Reply** — one reply per comment (button locks to "Replied (one-time)" afterwards).
-- **Edit / Delete** — replies get a three-dots menu (inline edit + delete); root comments get a header trash icon that cascade-deletes the whole thread.
+- Threads grouped per post, sorted by latest activity; posts with no activity for 7 days collapse under an `Older (N)` toggle.
+- **Like** — admin-only, one-time, permanent (no unlike endpoint).
+- **Reply** — one reply per comment.
+- **Edit / Delete** — replies support inline edit and delete; deleting a root comment cascade-deletes the whole thread.
 - Author identity (GitHub login + avatar) is captured at sign-in via the JWT `profile.login` claim, with an avatar-URL fallback for pre-existing sessions.
 
 ---
 
-## Design System
+## 🎨 Design System
 
 The visual language is **neo-brutalism**, specified in [`DESIGN.md`](DESIGN.md) and tokenized as Tailwind v4 `@theme` variables in [`app/globals.css`](app/globals.css):
 
 - **Ink borders**: 2px solid `var(--color-ink)` on every surface and control.
 - **Hard shadows**: zero-blur offsets (`4px 4px 0px var(--color-ink)`); hover lifts elements `-2px/-2px` with a `6px` shadow; active presses `+4px/+4px` with no shadow.
+- **Layout shell**: public pages are full-bleed — a single `px-5 sm:px-8` wrapper (20px mobile / 32px desktop edge gutters) with no forced centered column, matching the prototype. Article/project prose keeps a left-aligned 720px reading measure beside the TOC rail; the home view caps its inner content at `max-w-7xl`. The admin CMS body stays centered (`max-w-7xl`) for table readability.
 - **Palette**: warm paper surfaces with a vermilion primary (`#AB2F00`) plus Material-style semantic tokens (`surface`, `on-surface`, `primary`, `secondary-fixed-dim`, …).
-- **Dark mode**: a `.dark` block overrides ~40 of those `@theme` tokens (surfaces, ink, badges flip), so every token-driven utility — and the ink shadows/borders above — inverts automatically. Boundaries that are meant to stay dark (the hero terminal) use literal colors instead of tokens.
-- **Typography**: *Newsreader* serif for expressive display headings and article prose, *Plus Jakarta Sans* for UI/body, *JetBrains Mono* for code and mono labels, plus Material Symbols Outlined icons — all self-hosted via `next/font` (see [`app/layout.tsx`](app/layout.tsx)).
+- **Dark mode**: a `.dark` block overrides ~50 of those `@theme` tokens (surfaces, ink, badges flip), so every token-driven utility — and the ink shadows/borders above — inverts automatically. Boundaries that are meant to stay dark (the hero terminal) use literal colors instead of tokens.
+- **Typography**: *Newsreader* serif for display headings and article prose, *Plus Jakarta Sans* for UI/body, *JetBrains Mono* for code and mono labels, plus Material Symbols Outlined icons — all self-hosted via `next/font` (see [`app/layout.tsx`](app/layout.tsx)).
 
 All components consume these tokens — never hardcode hex values in components (the always-dark terminal chrome is the one deliberate exception).
 
 ---
 
-## Build & Run in Production
+## 📦 Build & Run in Production
 
 ```bash
 npm run build   # compiles, type-checks routes, prerenders static pages
@@ -395,7 +413,7 @@ Production checklist:
 
 ---
 
-## Deploying to Vercel
+## ☁️ Deploying to Vercel
 
 1. Push the repository to GitHub and import it in Vercel (framework preset: **Next.js**).
 2. Add all environment variables from `.env.example` in *Project → Settings → Environment Variables* (set `NEXT_PUBLIC_SITE_URL` to the Vercel domain).
@@ -407,11 +425,12 @@ The Edge middleware and Auth.js config already set `trustHost`, so no extra prox
 
 ---
 
-## Troubleshooting
+## 🩺 Troubleshooting
 
 | Symptom | Cause & fix |
 | ------- | ----------- |
 | IDE shows `Cannot find module '@/…'` but `npm run typecheck`/`build` pass | Stale TypeScript language server. Command Palette → **TypeScript: Restart TS Server** (or reload the window). The code is fine — don't change imports. |
+| Browser still shows the old layout/classes after an edit | Verify what the server actually sends: look for the class string in `(Invoke-WebRequest http://localhost:3000).Content`. If it's old, make sure the file was saved to disk (editor buffers can differ from disk), run only **one** dev server per project (two servers sharing `.next` cause `2.pack.gz_` ENOENT cache warnings), and if it's still stuck stop the server, delete `.next`, and restart. |
 | `Unknown at rule @theme` warning in `globals.css` | VS Code's built-in CSS validator doesn't know Tailwind v4 at-rules. Harmless; already silenced via `.vscode/settings.json`. Install the *Tailwind CSS IntelliSense* extension for full support. |
 | Public pages render but show no content | `MONGODB_URI` missing/unreachable, or DB not seeded. Fix the URI and run `npm run seed`. |
 | `/admin` redirects to `/login` in a loop after signing in | Missing/invalid `AUTH_SECRET`, or callback URL mismatch in the GitHub OAuth App. Check both, then restart the dev server. |
@@ -423,6 +442,14 @@ The Edge middleware and Auth.js config already set `trustHost`, so no extra prox
 
 ---
 
-## License
+## 📄 License
 
 Private personal project — all rights reserved.
+
+---
+
+<div align="center">
+
+© 2026 Harsh · <a href="#-buildlog">Back to top ↑</a>
+
+</div>
