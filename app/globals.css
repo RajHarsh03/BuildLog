@@ -303,14 +303,16 @@
   line-height: 1.75;
   color: var(--color-on-surface-variant);
 }
-/* Editorial drop cap on the lead paragraph (matches the prototype). */
-.mdx-content > p:first-child {
+/* Editorial drop cap on the lead paragraph (matches the prototype).
+   first-of-type (not first-child) so a cover <img> above the text
+   doesn't disable it. */
+.mdx-content > p:first-of-type {
   font-family: var(--font-body-lg);
   font-size: 1.25em; /* 20px at base */
   line-height: 1.6;
   color: var(--color-on-surface);
 }
-.mdx-content > p:first-child::first-letter {
+.mdx-content > p:first-of-type::first-letter {
   float: left;
   font-family: var(--font-headline-lg);
   font-size: 3.5rem;

@@ -206,9 +206,15 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </aside>
 
           <article
-            className="mdx-content lg:col-span-8 max-w-[720px] w-full text-on-surface transition-all"
+            className="mdx-content lg:col-span-8 max-w-[720px] lg:max-w-none w-full text-on-surface transition-all"
             id="article-prose"
           >
+            {/* Cover sits inside the prose measure so it reads as a figure,
+                not a full-bleed banner. */}
+            {(post.seoImage || post.coverImage) && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img alt={post.title} src={post.seoImage || post.coverImage} />
+            )}
             {content}
           </article>
         </div>
