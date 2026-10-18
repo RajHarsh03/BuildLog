@@ -261,7 +261,7 @@ export async function getAllPostsAdmin(): Promise<PostSummary[]> {
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
-export async function getPostStats() {
+async function getPostStatsUncached() {
   await dbConnect();
   const [total, published, drafts] = await Promise.all([
     PostModel.countDocuments({}),
@@ -270,6 +270,14 @@ export async function getPostStats() {
   ]);
   return { total, published, drafts };
 }
+
+// Home and About render this on every request; without the cache their
+// navigations trail Articles/Projects (whose reads are all cached).
+// Post mutations revalidateTag("posts"), so counts stay fresh after edits.
+export const getPostStats = unstable_cache(getPostStatsUncached, ["getPostStats"], {
+  tags: ["posts"],
+  revalidate: 300,
+});
 
 export async function createPost(input: PostInput): Promise<Post> {
   await dbConnect();
