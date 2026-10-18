@@ -283,11 +283,15 @@ export async function createPost(input: PostInput): Promise<Post> {
   await dbConnect();
   const slug = await uniqueSlug(input.title);
   const readingTime = Math.max(1, Math.round(computeReadingTime(input.content || "").minutes));
+  // Admin-chosen date back-dates both publishedAt and createdAt (sorting and
+  // display follow it); otherwise publishing now stamps the current time.
+  const chosen = input.publishedAt ? new Date(input.publishedAt) : undefined;
   const doc = await PostModel.create({
     ...input,
     slug,
     readingTime,
-    publishedAt: input.status === "published" ? new Date() : undefined,
+    publishedAt: chosen ?? (input.status === "published" ? new Date() : undefined),
+    ...(chosen ? { createdAt: chosen } : {}),
   } as Partial<IPost>);
   // Only one post can be featured at a time.
   if (input.featured === true) {
@@ -309,7 +313,12 @@ export async function updatePost(id: string, input: Partial<PostInput>): Promise
   if (typeof input.content === "string") {
     patch.readingTime = Math.max(1, Math.round(computeReadingTime(input.content).minutes));
   }
-  if (input.status === "published" && current.status !== "published") {
+  if (input.publishedAt) {
+    // Explicit admin date wins: back-date publishedAt and createdAt together.
+    const d = new Date(input.publishedAt);
+    patch.publishedAt = d;
+    patch.createdAt = d;
+  } else if (input.status === "published" && current.status !== "published") {
     patch.publishedAt = new Date();
   }
   const doc = await PostModel.findByIdAndUpdate(id, patch, { new: true });

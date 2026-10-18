@@ -136,7 +136,14 @@ export const getProjectStatusCounts = unstable_cache(
 export async function createProject(input: ProjectInput): Promise<Project> {
   await dbConnect();
   const slug = await uniqueSlug(input.name);
-  const doc = await ProjectModel.create({ ...input, slug } as Partial<IProject>);
+  // Admin-chosen date back-dates publishedAt and createdAt together.
+  const chosen = input.publishedAt ? new Date(input.publishedAt) : undefined;
+  const doc = await ProjectModel.create({
+    ...input,
+    slug,
+    publishedAt: chosen,
+    ...(chosen ? { createdAt: chosen } : {}),
+  } as Partial<IProject>);
   // Only one project can be featured at a time.
   if (input.featured) {
     await clearFeaturedExcept("project", String(doc._id));
@@ -155,6 +162,11 @@ export async function updateProject(
   const patch: Partial<IProject> = { ...input } as Partial<IProject>;
   if (input.name && input.name !== current.name) {
     patch.slug = await uniqueSlug(input.name, id);
+  }
+  if (input.publishedAt) {
+    const d = new Date(input.publishedAt);
+    patch.publishedAt = d;
+    patch.createdAt = d;
   }
   const doc = await ProjectModel.findByIdAndUpdate(id, patch, { new: true });
   // Only one project can be featured at a time.
