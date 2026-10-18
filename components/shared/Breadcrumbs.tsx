@@ -65,7 +65,7 @@ export function Breadcrumbs({
               {item.label}
             </Link>
           ) : (
-            <span className="text-on-surface font-semibold bg-surface-container px-1.5 sm:px-2 py-px sm:py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)] min-w-0 max-w-full whitespace-normal break-words text-left">
+            <span className="text-on-surface font-semibold bg-surface-container px-1.5 sm:px-2 py-px sm:py-0.5 rounded shadow-[1px_1px_0px_var(--color-ink)] border-2 border-[var(--color-ink)] min-w-0 max-w-[55vw] sm:max-w-[260px] truncate">
               {item.label}
             </span>
           )}
