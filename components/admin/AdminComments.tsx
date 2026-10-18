@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
+import { useToast } from "@/components/shared/Toast";
 import { cn } from "@/lib/utils";
 import type { Comment } from "@/types/comment";
 
@@ -10,6 +12,8 @@ export interface CommentGroup {
   postId: string;
   postTitle: string;
   postSlug: string;
+  /** Absolute path to the entry; defaults to /articles/<postSlug> for posts. */
+  postHref?: string;
   comments: Comment[];
 }
 
@@ -48,10 +52,10 @@ function buildTree(comments: Comment[]): TreeNode[] {
 function Avatar({ src, name }: { src?: string | null; name: string }) {
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img alt={name} src={src} className="w-8 h-8 rounded-full object-cover border-2 border-on-surface shrink-0" />;
+    return <img alt={name} src={src} className="w-8 h-8 relative z-10 rounded-full object-cover border-2 border-on-surface shrink-0" />;
   }
   return (
-    <span className="w-8 h-8 rounded-full grid place-items-center bg-surface-container border-2 border-on-surface font-mono-code text-[12px] font-bold text-on-surface shrink-0">
+    <span className="w-8 h-8 relative z-10 rounded-full grid place-items-center bg-surface-container border-2 border-on-surface font-mono-code text-[12px] font-bold text-on-surface shrink-0">
       {name.charAt(0).toUpperCase()}
     </span>
   );
@@ -69,7 +73,7 @@ function CommentNode({
   node: TreeNode;
   isRoot: boolean;
   onLike: (id: string) => void;
-  onReply: (parentId: string, postId: string, body: string) => Promise<void>;
+  onReply: (parentId: string, postId: string, body: string) => Promise<{ ok: boolean; error?: string }>;
   onDelete: (id: string) => void;
   onEdit: (id: string, body: string) => Promise<boolean>;
   busyId: string | null;
@@ -77,6 +81,7 @@ function CommentNode({
   const [replying, setReplying] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [replyError, setReplyError] = useState("");
   // Three-dots menu (children only) + inline edit mode.
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -87,10 +92,16 @@ function CommentNode({
     const body = text.trim();
     if (!body || sending) return;
     setSending(true);
-    await onReply(node._id, node.postId, body);
+    const result = await onReply(node._id, node.postId, body);
     setSending(false);
-    setReplying(false);
-    setText("");
+    // Keep the composer open with the error visible when the API rejects.
+    if (result.ok) {
+      setReplying(false);
+      setText("");
+      setReplyError("");
+    } else {
+      setReplyError(result.error || "Failed to send reply");
+    }
   }
 
   async function saveEdit() {
@@ -292,7 +303,7 @@ function CommentNode({
             <div className="relative pl-[27px]">
               <span
                 aria-hidden
-                className="absolute left-0 -top-1 h-[calc(100%+4px)] w-0.5 bg-on-surface/60"
+                className="absolute left-0 -top-3 h-[calc(100%+12px)] w-0.5 bg-on-surface/60"
               />
               {bodyEl}
             </div>
@@ -304,8 +315,8 @@ function CommentNode({
                     <span
                       aria-hidden
                       className={cn(
-                        "absolute left-0 top-0 w-0.5 bg-on-surface/60",
-                        isLastReply ? "h-[28px]" : "h-full",
+                        "absolute left-0 -top-4 w-0.5 bg-on-surface/60",
+                        isLastReply ? "h-[calc(28px+16px)]" : "h-[calc(100%+16px)]",
                       )}
                     />
                     <span
@@ -321,6 +332,9 @@ function CommentNode({
           {/* Reply box sits below the whole thread, full card width (same as no-reply case) */}
           {replying && (
             <div className="mt-3 space-y-2">
+              {replyError && (
+                <p className="font-mono-code text-[11px] text-[#991B1B]">{replyError}</p>
+              )}
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -350,6 +364,9 @@ function CommentNode({
           </div>
           {replying && (
             <div className="mt-2.5 space-y-2">
+              {replyError && (
+                <p className="font-mono-code text-[11px] text-[#991B1B]">{replyError}</p>
+              )}
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -381,9 +398,16 @@ function CommentNode({
 export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[] }) {
   const [groups, setGroups] = useState<CommentGroup[]>(initialGroups);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const router = useRouter();
+  const { toast } = useToast();
   // Post threads start collapsed; clicking the header toggles the comments.
   const [openPosts, setOpenPosts] = useState<Record<string, boolean>>({});
   const [showAll, setShowAll] = useState(false);
+
+  // Re-seed from server props whenever they change (router.refresh pushes
+  // fresh data), so tab chips, "N comment" badges and the page total stay
+  // in sync after every mutation instead of showing stale counts.
+  useEffect(() => setGroups(initialGroups), [initialGroups]);
 
   const total = useMemo(() => groups.reduce((sum, g) => sum + g.comments.length, 0), [groups]);
 
@@ -417,24 +441,36 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
         body: JSON.stringify({ commentId: id }),
       });
       const data = await res.json();
-      if (res.ok && data.comment) replaceComment(data.comment as Comment);
+      if (res.ok && data.comment) {
+        replaceComment(data.comment as Comment);
+        toast("Comment liked");
+        router.refresh();
+      }
     } finally {
       setBusyId(null);
     }
   }
 
-  async function reply(parentId: string, postId: string, body: string) {
+  async function reply(
+    parentId: string,
+    postId: string,
+    body: string,
+  ): Promise<{ ok: boolean; error?: string }> {
     const res = await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId, body, parentId }),
     });
-    const data = await res.json();
-    if (res.ok && data.comment) {
+    const data = await res.json().catch(() => null);
+    if (res.ok && data?.comment) {
       setGroups((prev) =>
         prev.map((g) => (g.postId === postId ? { ...g, comments: [data.comment, ...g.comments] } : g)),
       );
+      router.refresh();
+      toast("Reply sent");
+      return { ok: true };
     }
+    return { ok: false, error: data?.error ?? "Failed to send reply" };
   }
 
   /** Permanently remove a comment (and its replies) from the DB. */
@@ -452,6 +488,8 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
             }))
             .filter((g) => g.comments.length > 0),
         );
+        toast("Comment deleted");
+        router.refresh();
       }
     } finally {
       setBusyId(null);
@@ -470,6 +508,8 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
       const data = await res.json();
       if (res.ok && data.comment) {
         replaceComment(data.comment as Comment);
+        toast("Comment updated");
+        router.refresh();
         return true;
       }
       return false;
@@ -491,11 +531,8 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
 
   return (
     <div className="space-y-6">
-      {/* Activity filter row */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-mono-code text-[11px] sm:text-label-sm text-on-surface-variant">
-          {showAll ? "All threads" : "Active this week"} · sorted by latest comment
-        </span>
+      {/* Activity window row: only the Older (N) toggle when it applies */}
+      <div className="flex items-center justify-end gap-3">
         {stale.length > 0 && (
           <button
             type="button"
@@ -522,7 +559,7 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
           return (
             <section
               key={g.postId}
-              className="bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] overflow-hidden"
+              className="bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)]"
             >
               {/* Post header — click anywhere to expand/collapse the thread */}
               <div
@@ -536,10 +573,10 @@ export function AdminComments({ groups: initialGroups }: { groups: CommentGroup[
                     setOpenPosts((prev) => ({ ...prev, [g.postId]: !open }));
                   }
                 }}
-                className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b-2 border-on-surface bg-surface-container-low cursor-pointer select-none hover:bg-surface-container transition-colors"
+                className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b-2 border-on-surface bg-surface-container-low rounded-t-[2px] cursor-pointer select-none hover:bg-surface-container transition-colors"
               >
                 <Link
-                  href={`/articles/${g.postSlug}`}
+                  href={g.postHref ?? `/articles/${g.postSlug}`}
                   target="_blank"
                   onClick={(e) => e.stopPropagation()}
                   className="min-w-0 font-headline-sm text-[15px] sm:text-headline-sm font-bold text-on-surface hover:text-primary transition-colors flex items-center gap-1.5"
