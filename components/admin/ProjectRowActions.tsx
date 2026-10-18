@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { useToast } from "@/components/shared/Toast";
 import type { ProjectStatus } from "@/types/project";
 
 interface ProjectRowActionsProps {
@@ -20,24 +21,27 @@ export function ProjectRowActions({ id, status, featured }: ProjectRowActionsPro
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
+  const { toast } = useToast();
 
   const isActive = status === "active";
   const isArchived = status === "archived";
 
-  async function patch(body: Record<string, unknown>) {
+  async function patch(body: Record<string, unknown>, message: string) {
     startTransition(async () => {
-      await fetch(`/api/projects/${id}`, {
+      const res = await fetch(`/api/projects/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      toast(res.ok ? message : "Action failed", res.ok ? "success" : "error");
       router.refresh();
     });
   }
 
   async function remove() {
     startTransition(async () => {
-      await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      toast(res.ok ? "Project deleted" : "Delete failed", res.ok ? "success" : "error");
       router.refresh();
     });
   }
@@ -48,7 +52,16 @@ export function ProjectRowActions({ id, status, featured }: ProjectRowActionsPro
         type="button"
         title={isArchived ? "Restore to active (unarchive)" : isActive ? "Mark as shipped" : "Mark as active"}
         disabled={isPending}
-        onClick={() => patch({ status: isActive ? "shipped" : "active" })}
+        onClick={() =>
+          patch(
+            { status: isActive ? "shipped" : "active" },
+            isArchived
+              ? "Project restored (active)"
+              : isActive
+                ? "Marked as shipped"
+                : "Set active",
+          )
+        }
         className={iconBtn}
       >
         <Icon
@@ -62,7 +75,7 @@ export function ProjectRowActions({ id, status, featured }: ProjectRowActionsPro
           type="button"
           title="Archive (hide from public site)"
           disabled={isPending}
-          onClick={() => patch({ status: "archived" })}
+          onClick={() => patch({ status: "archived" }, "Project archived")}
           className={iconBtn}
         >
           <Icon name="archive" size={18} />
@@ -73,7 +86,12 @@ export function ProjectRowActions({ id, status, featured }: ProjectRowActionsPro
         type="button"
         title={featured ? "Remove from featured" : "Mark as featured"}
         disabled={isPending}
-        onClick={() => patch({ featured: !featured })}
+        onClick={() =>
+          patch(
+            { featured: !featured },
+            featured ? "Removed from featured" : "Marked as featured",
+          )
+        }
         className={iconBtn}
       >
         <Icon

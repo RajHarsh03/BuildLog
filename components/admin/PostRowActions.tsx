@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { useToast } from "@/components/shared/Toast";
 import type { PostStatus } from "@/types/post";
 
 interface PostRowActionsProps {
@@ -20,23 +21,26 @@ export function PostRowActions({ id, status, featured }: PostRowActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
+  const { toast } = useToast();
 
   const isPublished = status === "published";
 
-  async function patch(body: Record<string, unknown>) {
+  async function patch(body: Record<string, unknown>, message: string) {
     startTransition(async () => {
-      await fetch(`/api/posts/${id}`, {
+      const res = await fetch(`/api/posts/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      toast(res.ok ? message : "Action failed", res.ok ? "success" : "error");
       router.refresh();
     });
   }
 
   async function remove() {
     startTransition(async () => {
-      await fetch(`/api/posts/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+      toast(res.ok ? "Post deleted" : "Delete failed", res.ok ? "success" : "error");
       router.refresh();
     });
   }
@@ -47,7 +51,12 @@ export function PostRowActions({ id, status, featured }: PostRowActionsProps) {
         type="button"
         title={isPublished ? "Unpublish (move to draft)" : "Publish"}
         disabled={isPending}
-        onClick={() => patch({ status: isPublished ? "draft" : "published" })}
+        onClick={() =>
+          patch(
+            { status: isPublished ? "draft" : "published" },
+            isPublished ? "Moved to drafts" : "Post published",
+          )
+        }
         className={iconBtn}
       >
         <Icon name={isPublished ? "visibility_off" : "public"} size={18} />
@@ -57,7 +66,12 @@ export function PostRowActions({ id, status, featured }: PostRowActionsProps) {
         type="button"
         title={featured ? "Remove from featured" : "Mark as featured"}
         disabled={isPending}
-        onClick={() => patch({ featured: !featured })}
+        onClick={() =>
+          patch(
+            { featured: !featured },
+            featured ? "Removed from featured" : "Marked as featured",
+          )
+        }
         className={iconBtn}
       >
         <Icon
