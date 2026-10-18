@@ -21,7 +21,7 @@ function CardSkeleton() {
 
 export default function ArticlesLoading() {
   return (
-    <div className="w-full px-5 sm:px-8 py-8">
+    <div className="w-full px-5 sm:px-8 pt-8">
       <div className="animate-pulse space-y-4 mb-8" aria-hidden>
         <div className="h-4 w-32 rounded bg-surface-container" />
         <div className="h-10 w-72 rounded bg-surface-container" />
