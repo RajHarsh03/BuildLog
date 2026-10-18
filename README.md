@@ -64,7 +64,7 @@
 - **About page editor** — bio, journey milestones, and skills, all managed from `/admin/about`.
 - **Comment moderation** (`/admin/comments`) — threads grouped by post, reply / one-time like / inline edit / cascade delete (see [Comments System](#-comments-system)).
 - Markdown editor with **live client-side preview** tab.
-- Status workflow: posts `draft → published → archived`; projects `active → shipped`.
+- Status workflow: posts `draft → published → archived`; projects `active ↔ shipped`, with `archived` as the private "shelved" state (hidden from the public site, like post drafts).
 - Fully **responsive** — mobile-optimised lists, forms, and an icon-only admin nav.
 - Protected by Edge middleware — unauthenticated visitors are redirected to `/login`.
 
@@ -339,13 +339,13 @@ Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; i
 2. Visit `/admin` → you are redirected to `/login` → click **Continue with GitHub**.
 3. On first sign-in, Auth.js creates your user document in MongoDB and issues a JWT session (stored in an http-only cookie).
 4. **Posts**: title, excerpt, category, tags, cover image, status (`draft`/`published`/`archived`), featured flag, SEO title/description, and the MDX body. The **Preview** tab renders the markdown client-side as you type.
-5. **Projects**: name, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`), featured flag, MDX case-study body.
+5. **Projects**: name, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`/`archived`), featured flag, MDX case-study body. The row actions include an archive button that hides the project from every public page.
 6. **About**: bio text, journey milestones (year/title/description), and the skills grid — edited as a single document.
 7. **Comments**: expand a post's accordion to see its threads (newest activity first); like once, reply once, edit your replies via the ⋮ menu, or trash a whole thread.
 8. Row actions on the list pages let you publish/unpublish, feature, and delete (with two-step confirm) without opening the editor.
 9. Sign out from the admin top bar.
 
-Only `published` posts and their slugs appear on the public site; drafts and archived content stay inside the CMS.
+Only `published` posts appear on the public site; drafts and archived posts stay inside the CMS. Likewise, `archived` projects are excluded from the browser, search, featured spotlight, prerender, and their detail URLs 404.
 
 ---
 
