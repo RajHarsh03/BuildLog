@@ -5,6 +5,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { MarkdownPreview } from "@/components/admin/MarkdownPreview";
+import { PublishDateField, toDateInputValue } from "@/components/admin/PublishDateField";
+import { useToast } from "@/components/shared/Toast";
 import { SelectDropdown } from "@/components/admin/SelectDropdown";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectStatus } from "@/types/project";
@@ -21,6 +23,7 @@ const labelClass =
 
 export function ProjectForm({ project }: ProjectFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const isEdit = Boolean(project);
 
   const [name, setName] = useState(project?.name ?? "");
@@ -34,6 +37,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const [content, setContent] = useState(project?.content ?? "");
   const [status, setStatus] = useState<ProjectStatus>(project?.status ?? "active");
   const [featured, setFeatured] = useState(project?.featured ?? false);
+  const [publishDate, setPublishDate] = useState(toDateInputValue(project?.publishedAt));
 
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [saving, setSaving] = useState(false);
@@ -61,6 +65,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
       liveUrl: liveUrl.trim(),
       status,
       featured,
+      // Noon keeps the picked calendar day stable across timezones.
+      ...(publishDate ? { publishedAt: new Date(`${publishDate}T12:00:00`).toISOString() } : {}),
     };
 
     setSaving(true);
@@ -75,10 +81,14 @@ export function ProjectForm({ project }: ProjectFormProps) {
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save project");
+      toast(
+        status === "shipped" ? "Project shipped" : status === "archived" ? "Project archived" : "Project saved",
+      );
       router.push("/admin/projects");
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
+      toast((err as Error).message, "error");
       setSaving(false);
     }
   }
@@ -199,6 +209,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 onChange={(v) => setStatus(v as ProjectStatus)}
               />
             </div>
+
+            <PublishDateField
+              id="publishDate"
+              value={publishDate}
+              onChange={setPublishDate}
+              hint="Back-date the build or pick Today — empty keeps the existing date."
+            />
 
             <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
               <input

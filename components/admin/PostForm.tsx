@@ -5,6 +5,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { MarkdownPreview } from "@/components/admin/MarkdownPreview";
+import { PublishDateField, toDateInputValue } from "@/components/admin/PublishDateField";
+import { useToast } from "@/components/shared/Toast";
 import { SelectDropdown } from "@/components/admin/SelectDropdown";
 import { cn } from "@/lib/utils";
 import type { Post, PostStatus } from "@/types/post";
@@ -21,6 +23,7 @@ const labelClass =
 
 export function PostForm({ post }: PostFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const isEdit = Boolean(post);
 
   const [title, setTitle] = useState(post?.title ?? "");
@@ -31,6 +34,7 @@ export function PostForm({ post }: PostFormProps) {
   const [content, setContent] = useState(post?.content ?? "");
   const [status, setStatus] = useState<PostStatus>(post?.status ?? "draft");
   const [featured, setFeatured] = useState(post?.featured ?? false);
+  const [publishDate, setPublishDate] = useState(toDateInputValue(post?.publishedAt));
   const [seoTitle, setSeoTitle] = useState(post?.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(post?.seoDescription ?? "");
   const [seoImage, setSeoImage] = useState(post?.seoImage ?? "");
@@ -63,6 +67,8 @@ export function PostForm({ post }: PostFormProps) {
       coverImage: coverImage.trim(),
       status,
       featured,
+      // Noon keeps the picked calendar day stable across timezones.
+      ...(publishDate ? { publishedAt: new Date(`${publishDate}T12:00:00`).toISOString() } : {}),
       seoTitle: seoTitle.trim(),
       seoDescription: seoDescription.trim(),
       seoImage: seoImage.trim(),
@@ -77,10 +83,14 @@ export function PostForm({ post }: PostFormProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save post");
+      toast(
+        status === "published" ? "Post published" : status === "archived" ? "Post archived" : "Draft saved",
+      );
       router.push("/admin/posts");
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
+      toast((err as Error).message, "error");
       setSaving(false);
     }
   }
@@ -215,6 +225,13 @@ export function PostForm({ post }: PostFormProps) {
                 onChange={(v) => setStatus(v as PostStatus)}
               />
             </div>
+
+            <PublishDateField
+              id="publishDate"
+              value={publishDate}
+              onChange={setPublishDate}
+              hint="Back-date the post or pick Today — empty keeps the existing date."
+            />
 
             <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
               <input
