@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { ToastProvider } from "@/components/shared/Toast";
+import { SessionWelcome } from "@/components/shared/SessionWelcome";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -59,7 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-background text-on-surface font-body-md text-body-md min-h-screen flex flex-col antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
-        {children}
+        <ToastProvider>
+          {children}
+          <SessionWelcome />
+        </ToastProvider>
       </body>
     </html>
   );
