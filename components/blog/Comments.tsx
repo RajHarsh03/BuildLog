@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { Icon } from "@/components/shared/Icon";
+import { useToast } from "@/components/shared/Toast";
+import { SIGNED_IN_FLAG } from "@/components/shared/SessionWelcome";
 import { cn } from "@/lib/utils";
 import type { Comment } from "@/types/comment";
 
@@ -54,13 +56,13 @@ function Avatar({ src, name, size = "md" }: { src?: string | null; name: string;
       <img
         alt={name}
         src={src}
-        className={`${dim} rounded-full object-cover border-2 border-on-surface shrink-0`}
+        className={`${dim} relative z-10 rounded-full object-cover border-2 border-on-surface shrink-0`}
       />
     );
   }
   return (
     <span
-      className={`${dim} rounded-full grid place-items-center bg-surface-container border-2 border-on-surface font-mono-code font-bold text-on-surface shrink-0`}
+      className={`${dim} relative z-10 rounded-full grid place-items-center bg-surface-container border-2 border-on-surface font-mono-code font-bold text-on-surface shrink-0`}
     >
       {name.charAt(0).toUpperCase()}
     </span>
@@ -79,6 +81,7 @@ export function Comments({ postId }: { postId: string }) {
   const [body, setBody] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +121,7 @@ export function Comments({ postId }: { postId: string }) {
       // Newest-first: a fresh comment belongs at the top of the thread.
       setComments((prev) => [data.comment as Comment, ...prev]);
       setBody("");
+      toast("Comment posted");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -146,8 +150,10 @@ export function Comments({ postId }: { postId: string }) {
       node.likes > 0 ? (
         <span className="relative inline-flex shrink-0">
           {avatarBase}
-          {/* YouTube creator-heart style: solid red heart with white outline */}
-          <span className="group/heart absolute -bottom-0.5 -right-0.5 inline-flex">
+          {/* YouTube creator-heart style: solid red heart with white outline.
+              z-20: the avatar img is z-10 (to cover the thread line), so the
+              badge must stack above it. */}
+          <span className="group/heart absolute -bottom-0.5 -right-0.5 z-20 inline-flex">
             <svg
               viewBox="0 0 24 24"
               className="h-[15px] w-[15px] drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
@@ -181,12 +187,12 @@ export function Comments({ postId }: { postId: string }) {
       <li key={node._id} className={cn(depth === 0 ? "py-4" : "relative pl-4 pt-3")}>
         {depth > 0 && (
           <>
-            {/* Thread segment: continuous, last one stops at the avatar center */}
+            {/* Thread segment: starts behind the reply avatar (z-10) at its center */}
             <span
               aria-hidden
               className={cn(
-                "absolute left-0 top-0 w-0.5 bg-on-surface/60",
-                isLast ? "h-[28px]" : "h-full",
+                "absolute left-0 -top-4 w-0.5 bg-on-surface/60",
+                isLast ? "h-[calc(28px+16px)]" : "h-[calc(100%+16px)]",
               )}
             />
             <span
@@ -233,7 +239,7 @@ export function Comments({ postId }: { postId: string }) {
               {openReplies.has(node._id) && (
                 <span
                   aria-hidden
-                  className="absolute left-0 -top-1 h-[calc(100%+4px)] w-0.5 bg-on-surface/60"
+                  className="absolute left-0 -top-3 h-[calc(100%+12px)] w-0.5 bg-on-surface/60"
                 />
               )}
               {/* Mobile: opposite ends; desktop: toggle at ~28% of the row */}
@@ -358,14 +364,20 @@ export function Comments({ postId }: { postId: string }) {
                 <div className="flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={() =>
-                      void signOut({
-                        callbackUrl:
-                          typeof window !== "undefined"
-                            ? `${window.location.origin}${window.location.pathname}#comments`
-                            : "/#comments",
-                      })
-                    }
+                    onClick={() => {
+                      // Let the next sign-in greet again, then toast + stay on page.
+                      try {
+                        sessionStorage.removeItem(SIGNED_IN_FLAG);
+                      } catch {
+                        /* storage disabled */
+                      }
+                      void signOut({ redirect: false }).then(() => {
+                        // Cookie is cleared; drop the local session state so the
+                        // gated UI re-renders immediately (no remount needed).
+                        setUser(null);
+                        toast("Signed out", "info");
+                      });
+                    }}
                     className="inline-flex items-center gap-1 px-2 py-1 shrink-0 border-2 border-on-surface rounded bg-surface-container-lowest font-mono-code text-[9px] sm:text-label-sm font-bold uppercase tracking-wider text-on-surface-variant hover:text-[#991B1B] hover:bg-[#FEE2E2] transition-colors whitespace-nowrap"
                     title="Sign out of GitHub"
                   >
