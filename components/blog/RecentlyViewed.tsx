@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
+import { useToast } from "@/components/shared/Toast";
 
 export interface ViewedPost {
   slug: string;
@@ -60,6 +61,7 @@ export function clearViewedPosts() {
  */
 export function RecentlyViewed({ excludeSlug }: { excludeSlug?: string }) {
   const [items, setItems] = useState<ViewedPost[]>([]);
+  const { toast } = useToast();
 
   // Read after mount only: localStorage is browser-side, so this stays
   // SSR/hydration-safe (server renders nothing, client fills in).
@@ -82,6 +84,7 @@ export function RecentlyViewed({ excludeSlug }: { excludeSlug?: string }) {
           onClick={() => {
             clearViewedPosts();
             setItems([]);
+            toast("History cleared");
           }}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-lowest text-on-surface-variant font-mono-code text-[11px] font-bold uppercase tracking-wider rounded border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--color-ink)] hover:text-[#991B1B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
         >
