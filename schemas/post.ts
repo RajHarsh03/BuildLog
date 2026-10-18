@@ -12,6 +12,8 @@ export const postInputSchema = z.object({
   tags: z.array(z.string().min(1).max(40)).default([]),
   status: postStatusSchema.default("draft"),
   featured: z.boolean().default(false),
+  /** Optional ISO date from the admin form; back-dates publishedAt/createdAt. */
+  publishedAt: z.string().optional(),
   seoTitle: z.string().max(120).optional().or(z.literal("")),
   seoDescription: z.string().max(300).optional().or(z.literal("")),
   seoImage: z.string().url().optional().or(z.literal("")),

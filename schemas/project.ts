@@ -13,6 +13,8 @@ export const projectInputSchema = z.object({
   liveUrl: z.string().url().optional().or(z.literal("")),
   status: projectStatusSchema.default("active"),
   featured: z.boolean().default(false),
+  /** Optional ISO date from the admin form; back-dates publishedAt/createdAt. */
+  publishedAt: z.string().optional(),
 });
 
 export type ProjectInput = z.infer<typeof projectInputSchema>;
