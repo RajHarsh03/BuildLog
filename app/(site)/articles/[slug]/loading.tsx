@@ -1,7 +1,7 @@
 /** Route-level fallback shown while the article + MDX render streams in. */
 export default function ArticleDetailLoading() {
   return (
-    <div className="w-full px-5 sm:px-8 py-8 max-w-7xl mx-auto">
+    <div className="w-full px-5 sm:px-8 pt-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="animate-pulse space-y-4 mb-10" aria-hidden>
         <div className="h-4 w-40 rounded bg-surface-container" />
