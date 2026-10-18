@@ -13,6 +13,7 @@ export interface Project {
   liveUrl?: string;
   status: ProjectStatus;
   featured: boolean;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
