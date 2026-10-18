@@ -73,8 +73,12 @@ export async function POST(request: Request) {
 
   const userId = session.user.email ?? session.user.name ?? "anon";
   const key = `${userId}:${parsed.data.postId}`;
+  // The site owner (ADMIN_EMAIL) is exempt from the reader cooldown — otherwise
+  // replying to a comment they just posted gets silently blocked for 60s.
+  const ownerEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  const isOwner = Boolean(ownerEmail && session.user.email?.toLowerCase() === ownerEmail);
   const last = lastPostAt.get(key) ?? 0;
-  if (Date.now() - last < COOLDOWN_MS) {
+  if (!isOwner && Date.now() - last < COOLDOWN_MS) {
     const wait = Math.ceil((COOLDOWN_MS - (Date.now() - last)) / 1000);
     return NextResponse.json(
       { error: `Hold on — try again in ${wait}s` },
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
       },
       parsed.data.parentId ?? null,
     );
-    lastPostAt.set(key, Date.now());
+    if (!isOwner) lastPostAt.set(key, Date.now());
     return NextResponse.json({ comment }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to post comment";
