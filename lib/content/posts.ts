@@ -281,7 +281,7 @@ export const getPostStats = unstable_cache(getPostStatsUncached, ["getPostStats"
 
 export async function createPost(input: PostInput): Promise<Post> {
   await dbConnect();
-  const slug = await uniqueSlug(input.title);
+  const slug = await uniqueSlug(input.slug?.trim() || input.title);
   const readingTime = Math.max(1, Math.round(computeReadingTime(input.content || "").minutes));
   // Admin-chosen date back-dates both publishedAt and createdAt (sorting and
   // display follow it); otherwise publishing now stamps the current time.
@@ -307,8 +307,15 @@ export async function updatePost(id: string, input: Partial<PostInput>): Promise
   if (!current) return null;
 
   const patch: Partial<IPost> = { ...input } as Partial<IPost>;
-  if (input.title && input.title !== current.title) {
+  // Slug resolution: explicit custom slug wins; otherwise a changed title
+  // regenerates it; otherwise leave the stored slug untouched.
+  const wantedSlug = input.slug?.trim();
+  if (wantedSlug) {
+    patch.slug = wantedSlug === current.slug ? current.slug : await uniqueSlug(wantedSlug, id);
+  } else if (input.title && input.title !== current.title) {
     patch.slug = await uniqueSlug(input.title, id);
+  } else {
+    delete patch.slug;
   }
   if (typeof input.content === "string") {
     patch.readingTime = Math.max(1, Math.round(computeReadingTime(input.content).minutes));

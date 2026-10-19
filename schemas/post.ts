@@ -5,6 +5,8 @@ export const postStatusSchema = z.enum(["draft", "published", "archived"]);
 /** Payload accepted by POST/PATCH /api/posts. Slug is derived server-side. */
 export const postInputSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
+  /** Optional custom URL slug; sanitized + uniquified server-side. */
+  slug: z.string().trim().max(200).optional().or(z.literal("")),
   excerpt: z.string().max(400).default(""),
   content: z.string().default(""),
   coverImage: z.string().url().optional().or(z.literal("")),
