@@ -40,13 +40,16 @@ function makeTocPlugin(toc: TocItem[]) {
         (node.tagName === "h2" || node.tagName === "h3")
       ) {
         const text = nodeText(node).trim();
+        // The TOC renders its own 01/02 index — strip the author's leading
+        // "1." / "2)" numbering from the display text (ids keep the full text).
+        const display = text.replace(/^\d+[.)\-–]\s+/, "").trim() || text;
         const base = slugify(text) || "section";
         const count = seen.get(base) ?? 0;
         seen.set(base, count + 1);
         const id = count === 0 ? base : `${base}-${count}`;
         node.properties = node.properties ?? {};
         node.properties.id = id;
-        toc.push({ id, text, depth: node.tagName === "h2" ? 2 : 3 });
+        toc.push({ id, text: display, depth: node.tagName === "h2" ? 2 : 3 });
       }
       node.children?.forEach(visit);
     };
