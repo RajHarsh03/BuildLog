@@ -9,7 +9,7 @@ import { AuthorChip } from "@/components/blog/AuthorChip";
 import { Comments } from "@/components/blog/Comments";
 import { renderMdx } from "@/lib/mdx/render";
 import { getProjectBySlug } from "@/lib/content/projects";
-import { absoluteUrl, formatDate } from "@/lib/utils";
+import { absoluteUrl, formatDate, prettifySlug } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -95,7 +95,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
         {/* Header */}
         <header className="w-full pb-8 mb-10 border-b-2 border-on-surface space-y-6">
           <Breadcrumbs
-            items={[{ label: "Projects", href: "/projects" }, { label: project.name }]}
+            items={[{ label: "Projects", href: "/projects" }, { label: prettifySlug(project.slug) }]}
           />
 
           <div className="flex flex-wrap items-center gap-3">

@@ -26,6 +26,16 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Humanize a slug for display: hyphens → spaces, each word capitalized.
+ * e.g. "linux-file-system-hunting" -> "Linux File System Hunting" */
+export function prettifySlug(slug: string): string {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 /** Build an absolute URL from the configured site URL. */
 export function absoluteUrl(path = "/"): string {
   const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";

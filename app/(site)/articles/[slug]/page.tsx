@@ -15,7 +15,7 @@ import {
   getRelatedPosts,
   getAdjacentPosts,
 } from "@/lib/content/posts";
-import { absoluteUrl, formatDate, author } from "@/lib/utils";
+import { absoluteUrl, formatDate, prettifySlug, author } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -130,7 +130,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
                   label: post.category,
                   href: `/articles?category=${encodeURIComponent(post.category)}`,
                 },
-                { label: post.title },
+                { label: prettifySlug(post.slug) },
               ]}
             />
             <div className="flex items-center gap-2">
