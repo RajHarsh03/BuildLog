@@ -135,7 +135,7 @@ export const getProjectStatusCounts = unstable_cache(
 
 export async function createProject(input: ProjectInput): Promise<Project> {
   await dbConnect();
-  const slug = await uniqueSlug(input.name);
+  const slug = await uniqueSlug(input.slug?.trim() || input.name);
   // Admin-chosen date back-dates publishedAt and createdAt together.
   const chosen = input.publishedAt ? new Date(input.publishedAt) : undefined;
   const doc = await ProjectModel.create({
@@ -160,8 +160,15 @@ export async function updateProject(
   const current = await ProjectModel.findById(id);
   if (!current) return null;
   const patch: Partial<IProject> = { ...input } as Partial<IProject>;
-  if (input.name && input.name !== current.name) {
+  // Slug resolution: explicit custom slug wins; otherwise a changed name
+  // regenerates it; otherwise leave the stored slug untouched.
+  const wantedSlug = input.slug?.trim();
+  if (wantedSlug) {
+    patch.slug = wantedSlug === current.slug ? current.slug : await uniqueSlug(wantedSlug, id);
+  } else if (input.name && input.name !== current.name) {
     patch.slug = await uniqueSlug(input.name, id);
+  } else {
+    delete patch.slug;
   }
   if (input.publishedAt) {
     const d = new Date(input.publishedAt);
