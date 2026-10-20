@@ -45,13 +45,13 @@
 ## ✨ Features
 
 ### Public site
-- **Home** — featured article, latest posts, "currently building" panel, and newsletter callout.
+- **Home** — featured article, latest posts, featured-project spotlight (wording follows the project's status: *Currently building* while `active`, *Recently shipped* once `shipped`), and newsletter callout. The site header carries the same status-aware *Now building / Just shipped* chip on desktop.
 - **Articles** — filterable, paginated index (category + search) at `/articles`.
 - **Article detail** — server-rendered MDX (GitHub-flavored markdown), optional cover image figure, Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
 - **Comments** — custom, GitHub-gated comment threads under every article **and** project case study (see [Comments System](#-comments-system)).
 - **Slug-first breadcrumbs** — detail pages show the entry's (editable) URL slug, humanised (`my-short-url` → `My Short Url`), in the breadcrumb chip instead of the long title, so it never wraps or cuts mid-sentence.
-- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: cover image, TOC rail, author card, comments, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
-- **About** — author bio, journey timeline, and toolbelt, all editable from the CMS.
+- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: an identical byline bar (author, date, computed reading time + word count, live view count, font-size toggle, share links), cover image, scroll-spy TOC rail with reading-progress meter, author card, comments, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
+- **About** — author bio, journey timeline, toolbelt, and the featured-build *On The Bench* card (also status-worded), all editable from the CMS.
 - **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
 - **Dark mode** — light/dark toggle persisted in `localStorage` (`buildlog-theme`) and applied before first paint; default is light.
 - **Command-palette search** — global search over published posts and projects (**Ctrl/Cmd+K**), backed by the public `/api/search` endpoint.
@@ -259,7 +259,7 @@ BuildLog/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/ #   Auth.js endpoint
 │   │   ├── posts/ [id]/view/   #   REST CRUD (Zod-validated, admin-only) + view counter
-│   │   ├── projects/ [id]/     #   REST CRUD (Zod-validated, admin-only)
+│   │   ├── projects/ [id]/     #   REST CRUD (Zod-validated, admin-only) + view counter
 │   │   ├── about/              #   About document (GET/PUT)
 │   │   ├── search/             #   Command-palette search (public)
 │   │   └── comments/ [id]/ like/ # Comments REST (public read, gated write, admin mod)
@@ -299,7 +299,7 @@ BuildLog/
 ### Public
 | Route | Purpose |
 | ----- | ------- |
-| `/` | Home: featured article, latest posts, currently-building |
+| `/` | Home: featured article, latest posts, featured-project spotlight |
 | `/about` | Author bio, timeline, toolbelt |
 | `/articles` | Article index with category filter, search, pagination, and a recently-viewed strip |
 | `/articles/[slug]` | Article detail: MDX body, TOC, share, view tracking, comments, related posts |
@@ -332,6 +332,7 @@ BuildLog/
 | Route | Methods |
 | ----- | ------- |
 | `/api/posts/[id]/view` | `POST` — increments a post's view count (public; the client de-dupes with a 30-minute cooldown) |
+| `/api/projects/[id]/view` | `POST` — increments a project case study's view count (same public cooldown pattern as posts) |
 | `/api/search?q=` | `GET` — returns up to 5 published posts + 5 projects matching the query (powers the command palette; no auth) |
 | `/api/comments?postId=` | `GET` (threaded comments for an article or project; no auth) · `POST` (comment/reply — **requires GitHub session**; site owner is exempt from the cooldown) |
 
