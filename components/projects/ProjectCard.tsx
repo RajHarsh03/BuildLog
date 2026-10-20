@@ -75,9 +75,12 @@ function ProjectLinks({
 export function ProjectCard({
   project,
   featured = false,
+  className,
 }: {
   project: ProjectSummary;
   featured?: boolean;
+  /** Extra classes for the grid item (e.g. a parent-chosen md:col-span-*). */
+  className?: string;
 }) {
   if (featured) {
     return (
@@ -153,6 +156,7 @@ export function ProjectCard({
       className={cn(
         "md:col-span-6 bg-surface-container-lowest border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-8 flex flex-col justify-between gap-6 transition-all",
         "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)]",
+        className,
       )}
       data-category={project.status}
     >

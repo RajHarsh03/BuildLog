@@ -24,12 +24,18 @@ export default async function HomePage() {
     getProjects("all").catch(() => []),
   ]);
 
-  // Featured gets its own hero card; the grid below always shows 3 others.
-  const gridPosts = (featured ? latest.filter((p) => p._id !== featured._id) : latest).slice(0, 3);
+  // Featured gets its own hero card; the grid shows up to 3 of the rest.
+  // A lone leftover beside the hero looks stranded, so with exactly one
+  // non-featured post the spotlight stays alone. Two cards split the row
+  // evenly (md:grid-cols-2); three fill the three-track grid.
+  const remaining = (featured ? latest.filter((p) => p._id !== featured._id) : latest).slice(0, 3);
+  const gridPosts = featured && remaining.length === 1 ? [] : remaining;
   // Recent projects strip: skip the one already showcased in "Currently Building".
+  // Max 2; a lone card fills the row, a pair splits it evenly.
   const recentProjects = allProjects
     .filter((p) => !project || p._id !== project._id)
     .slice(0, 2);
+  const projectSpan = recentProjects.length === 1 ? "md:col-span-12" : "md:col-span-6";
 
   return (
     <div className="w-full px-5 sm:px-8 pt-8 overflow-x-clip">
@@ -210,64 +216,78 @@ export default async function HomePage() {
           {featured && <FeaturedArticle post={featured} />}
 
           {gridPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              className={`grid grid-cols-1 gap-6 ${
+                gridPosts.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+              }`}
+            >
               {gridPosts.map((post) => (
                 <ArticleCard key={post._id} post={post} />
               ))}
             </div>
           ) : (
-            <EmptyState
-              icon="article"
-              label="Journal // empty"
-              title="No articles published yet"
-              description="Build logs, postmortems, and field notes will appear here the moment they go live."
-            />
+            /* Featured is excluded from the grid, so "no posts" is only true
+               when there is not even a featured one to show above. */
+            !featured && (
+              <EmptyState
+                icon="article"
+                label="Journal // empty"
+                title="No articles published yet"
+                description="Build logs, postmortems, and field notes will appear here the moment they go live."
+              />
+            )
           )}
         </section>
 
-        {/* SECTION 4: RECENT PROJECTS — always shown while there is nothing to
-            list (empty state); skipped only when the featured card above already
-            covers the single public project. */}
-        {(allProjects.length === 0 || recentProjects.length > 0) && (
-          <section className="w-full space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 font-mono-code text-xs uppercase tracking-wider text-primary font-bold">
-                  <Icon name="handyman" size={16} />
-                  <span>Bench to Production</span>
-                </div>
-                <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
-                  Recent projects
-                </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
-                  Things I designed, shipped and maintained - source included.
-                </p>
+        {/* SECTION 4: RECENT PROJECTS - always rendered; when there is nothing
+            beyond the featured spotlight it shows a blank state instead of
+            hiding the whole section. */}
+        <section className="w-full space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 font-mono-code text-xs uppercase tracking-wider text-primary font-bold">
+                <Icon name="handyman" size={16} />
+                <span>Bench to Production</span>
               </div>
-              <Link
-                className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
-                href="/projects"
-              >
-                <span>View all projects</span>
-                <Icon name="arrow_forward" size={18} />
-              </Link>
+              <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
+                Recent projects
+              </h2>
+              <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
+                Things I designed, shipped and maintained - source included.
+              </p>
             </div>
-            {recentProjects.length > 0 ? (
-              /* Same 12-col grid as the projects page; ProjectCard spans 6 each. */
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                {recentProjects.map((p) => (
-                  <ProjectCard key={p._id} project={p} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon="handyman"
-                label="Workbench // quiet"
-                title="No public projects right now"
-                description="Everything in the lab is archived for now. Active and shipped builds will show up here again."
-              />
-            )}
-          </section>
-        )}
+            <Link
+              className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
+              href="/projects"
+            >
+              <span>View all projects</span>
+              <Icon name="arrow_forward" size={18} />
+            </Link>
+          </div>
+          {recentProjects.length > 0 ? (
+            /* Same 12-col grid as the projects page; span adapts to the card
+               count so 1 fills the row and a pair splits it evenly. */
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {recentProjects.map((p) => (
+                <ProjectCard key={p._id} project={p} className={projectSpan} />
+              ))}
+            </div>
+          ) : allProjects.length === 0 ? (
+            <EmptyState
+              icon="handyman"
+              label="Workbench // quiet"
+              title="No public projects right now"
+              description="Everything in the lab is archived for now. Active and shipped builds will show up here again."
+            />
+          ) : (
+            <EmptyState
+              icon="handyman"
+              label="Workbench // quiet"
+              title="More builds are cooking"
+              description="The spotlight above is my only public project for now - the rest of the bench is still in progress."
+            />
+          )}
+        </section>
       </div>
     </div>
   );
