@@ -49,6 +49,7 @@
 - **Articles** — filterable, paginated index (category + search) at `/articles`.
 - **Article detail** — server-rendered MDX (GitHub-flavored markdown), optional cover image figure, Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
 - **Comments** — custom, GitHub-gated comment threads under every article **and** project case study (see [Comments System](#-comments-system)).
+- **Slug-first breadcrumbs** — detail pages show the entry's (editable) URL slug, humanised (`my-short-url` → `My Short Url`), in the breadcrumb chip instead of the long title, so it never wraps or cuts mid-sentence.
 - **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: cover image, TOC rail, author card, comments, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
 - **About** — author bio, journey timeline, and toolbelt, all editable from the CMS.
 - **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
@@ -63,6 +64,8 @@
 - Dashboard with content stats and quick actions.
 - Full **CRUD for posts and projects**: create, edit, publish/unpublish, feature/unfeature, archive, delete.
 - **Publish-date control** — every post/project form has a date picker plus a **Today** button; pick an older date to back-date the entry (its `publishedAt` *and* creation date move, so lists and sorting treat it as published that day). Leaving it blank keeps the existing date / stamps "now" on publish.
+- **Editable URL slug** — a Slug field under the title on both forms: leave it alone to auto-generate from the title, or type a short one (`/articles/bleve-search`). The field previews the live URL and warns that renaming breaks previously shared links.
+- **Never lose a draft** — admin forms autosave to `localStorage` every ~0.7 s. Clicking away with unsaved edits raises an **Unsaved changes** dialog: *Save draft & leave* first persists a real draft in the CMS (posts → `draft`, projects → `archived`/private) and then navigates. Returning to the form restores the local copy with a toast; a successful save/publish clears it.
 - **About page editor** — bio, journey milestones, and skills, all managed from `/admin/about`.
 - **Comment moderation** (`/admin/comments`) — **Posts / Projects filter tabs**, threads grouped by source entry, reply / one-time like / inline edit / cascade delete, with counts that refresh live after every mutation (see [Comments System](#-comments-system)).
 - Markdown editor with **live client-side preview** tab.
@@ -270,14 +273,15 @@ BuildLog/
 │   ├── projects/               # ProjectCard, ProjectsBrowser
 │   ├── home/                   # CurrentlyBuilding, TypingStatus
 │   ├── shared/                 # Icon, Breadcrumbs, ThemeToggle, BackToTop
-│   └── admin/                  # Forms, row actions, nav, markdown preview,
-│                               #   SelectDropdown, AdminComments, LoginError
+│   └── admin/                  # Forms, row actions, nav, markdown preview, SelectDropdown,
+│                               #   AdminComments, LoginError, useFormAutosave (draft safety-net)
 ├── lib/
 │   ├── auth/                   # auth.ts, auth.config.ts (edge-safe), guard.ts
+│   ├── client/                 # formGuard.ts (unsaved-changes flag + DB draft-saver registry)
 │   ├── content/                # Query + CRUD helpers (posts, projects, about, comments, featured)
 │   ├── db/                     # mongodb.ts (Mongoose), mongo-client.ts (driver), models/
 │   ├── mdx/render.ts           # compileMDX + TOC plugin + Shiki config
-│   └── utils.ts                # cn(), slugify(), formatDate(), readingTime…
+│   └── utils.ts                # cn(), slugify(), prettifySlug(), formatDate(), readingTime…
 ├── public/                     # Static assets (wordmark logo)
 ├── scripts/seed.ts             # Sample content loader (11 posts, 6 projects)
 ├── schemas/                    # Zod payloads (post, project, about)
@@ -340,12 +344,14 @@ Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; i
 1. Start the app with valid `MONGODB_URI` + `AUTH_*` variables.
 2. Visit `/admin` → you are redirected to `/login` → click **Continue with GitHub**.
 3. On first sign-in, Auth.js creates your user document in MongoDB and issues a JWT session (stored in an http-only cookie).
-4. **Posts**: title, excerpt, category, tags, cover image, status (`draft`/`published`/`archived`), featured flag, **publish date** (back-date + Today button), SEO title/description, and the MDX body. The **Preview** tab renders the markdown client-side as you type.
-5. **Projects**: name, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`/`archived`), featured flag, **publish date**, MDX case-study body. The row actions include an archive button that hides the project from every public page.
+4. **Posts**: title, **slug** (editable; auto-derived from the title if left blank), excerpt, category, tags, cover image, status (`draft`/`published`/`archived`), featured flag, **publish date** (back-date + Today button), SEO title/description, and the MDX body. The **Preview** tab renders the markdown client-side as you type.
+5. **Projects**: name, **slug**, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`/`archived`), featured flag, **publish date**, MDX case-study body. The row actions include an archive button that hides the project from every public page.
 6. **About**: bio text, journey milestones (year/title/description), and the skills grid — edited as a single document.
 7. **Comments**: switch between the **Posts** and **Projects** tabs, expand an entry's accordion to see its threads (newest activity first); like once, reply once, edit your replies via the ⋮ menu, or trash a whole thread. Every mutation toasts and updates the counts instantly.
 8. Row actions on the list pages let you publish/unpublish, feature, and delete (with two-step confirm) without opening the editor.
 9. Sign out from the admin top bar.
+
+Draft-safety is always on while editing: forms autosave locally, and leaving an unsaved form through the admin nav offers to persist a real draft to the CMS before navigating away.
 
 Only `published` posts appear on the public site; drafts and archived posts stay inside the CMS. Likewise, `archived` projects are excluded from the browser, search, featured spotlight, prerender, and their detail URLs 404.
 
@@ -357,7 +363,7 @@ Article and project bodies are stored as **MDX strings in MongoDB** and compiled
 
 - `remark-gfm` — tables, task lists, strikethrough.
 - `rehype-pretty-code` (Shiki, dual `github-light` / `github-dark` themes, transparent background) — tokenized code blocks styled by the neo-brutalist `.code-block` terminal chrome with a copy button. The correct theme swaps automatically via CSS when dark mode is active, with no re-render.
-- A custom rehype plugin assigns **heading ids with the app's own `slugify`** and collects the **table of contents** in the same pass, guaranteeing TOC anchors always match rendered headings.
+- A custom rehype plugin assigns **heading ids with the app's own `slugify`** and collects the **table of contents** in the same pass, guaranteeing TOC anchors always match rendered headings. The TOC renders its own `01/02` index and strips any manual leading numbering (`1.`, `2)`) from the displayed heading text — ids keep the full text, so anchors never break.
 
 Supported markdown in the editor: headings, paragraphs, GFM tables, fenced code with language tags, blockquotes, ordered/unordered lists, links, images, bold/italic/inline code.
 
