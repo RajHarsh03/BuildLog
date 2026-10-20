@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import computeReadingTime from "reading-time";
 import { Icon } from "@/components/shared/Icon";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { AuthorChip } from "@/components/blog/AuthorChip";
+import { FontSizeToggle } from "@/components/blog/FontSizeToggle";
+import { ViewTracker } from "@/components/blog/ViewTracker";
+import { CopyLink } from "@/components/blog/CopyLink";
 import { Comments } from "@/components/blog/Comments";
 import { renderMdx } from "@/lib/mdx/render";
 import { getProjectBySlug } from "@/lib/content/projects";
-import { absoluteUrl, formatDate, prettifySlug } from "@/lib/utils";
+import { absoluteUrl, author, formatDate, prettifySlug } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -58,6 +62,9 @@ export default async function ProjectPage({ params }: { params: Params }) {
 
   const rendered = project.content ? await renderMdx(project.content) : null;
   const url = absoluteUrl(`/projects/${project.slug}`);
+  const published = project.publishedAt ?? project.createdAt;
+  const stats = computeReadingTime(project.content ?? "");
+  const minutes = Math.max(1, Math.round(stats.minutes));
 
   // Live Demo + GitHub: equal-width pair (matching grid tracks), content-sized.
   // Rendered top-right on desktop (status row) and below the chips on mobile.
@@ -90,7 +97,17 @@ export default async function ProjectPage({ params }: { params: Params }) {
   const hasActions = Boolean(project.liveUrl || project.githubUrl);
 
   return (
-    <div className="w-full px-5 sm:px-8 pt-8">
+    <>
+      {/* Same first-paint font-size restore as article pages: reads the saved
+          zoom before HTML parsing continues, so prose renders at the right
+          size from the very first frame (mirrors FontSizeToggle.tsx). */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            `try{var z=parseInt(localStorage.getItem("buildlog-font-size")||"0",10);if(z){document.documentElement.setAttribute("data-font-size",String(z));}}catch(e){}`,
+        }}
+      />
+      <div className="w-full px-5 sm:px-8 pt-8">
       <div className="flex flex-col w-full">
         {/* Header */}
         <header className="w-full pb-8 mb-10 border-b-2 border-on-surface space-y-6">
@@ -143,11 +160,35 @@ export default async function ProjectPage({ params }: { params: Params }) {
             </div>
           )}
 
-          <div className="font-mono-code text-label-sm text-on-surface-variant">
-            Published {formatDate(project.publishedAt ?? project.createdAt)}
-            {project.updatedAt !== (project.publishedAt ?? project.createdAt) && (
-              <> • Last updated {formatDate(project.updatedAt)}</>
-            )}
+          {/* Byline bar - identical contract to the article page header. */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono-code text-[12px] sm:text-mono-code text-on-surface-variant">
+              <span className="flex items-center gap-2 whitespace-nowrap">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt={author.name}
+                  className="w-6 h-6 rounded-full border border-on-surface object-cover"
+                  src={author.avatar}
+                />
+                <span className="text-on-surface font-medium">{author.name}</span>
+                <span className="text-outline">•</span>
+                <time dateTime={published}>{formatDate(published)}</time>
+              </span>
+              <span className="flex items-center gap-2 whitespace-nowrap">
+                <span>{minutes} min read</span>
+                <span className="text-outline">•</span>
+                <span>{stats.words.toLocaleString()} words</span>
+                <ViewTracker
+                  resource="projects"
+                  postId={project._id}
+                  initial={project.views ?? 0}
+                />
+              </span>
+            </div>
+            <div className="flex w-full items-center justify-between self-start sm:w-auto sm:justify-start sm:gap-4 lg:self-auto">
+              <FontSizeToggle />
+              <CopyLink url={url} title={project.name} />
+            </div>
           </div>
         </header>
 
@@ -158,7 +199,10 @@ export default async function ProjectPage({ params }: { params: Params }) {
               {rendered.toc.length > 0 && <TableOfContents items={rendered.toc} />}
               <AuthorChip url={url} title={project.name} />
             </aside>
-            <article className="mdx-content lg:col-span-8 max-w-[720px] lg:max-w-none w-full text-on-surface">
+            <article
+              id="article-prose"
+              className="mdx-content lg:col-span-8 max-w-[720px] lg:max-w-none w-full text-on-surface"
+            >
               {/* Cover sits inside the prose measure so it reads as a figure. */}
               {project.image && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -205,5 +249,6 @@ export default async function ProjectPage({ params }: { params: Params }) {
         <Comments postId={project._id} />
       </div>
     </div>
+    </>
   );
 }
