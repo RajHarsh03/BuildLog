@@ -47,13 +47,14 @@
 ### Public site
 - **Home** — featured article, latest posts, "currently building" panel, and newsletter callout.
 - **Articles** — filterable, paginated index (category + search) at `/articles`.
-- **Article detail** — server-rendered MDX (GitHub-flavored markdown), Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
-- **Comments** — custom, GitHub-gated comment threads per article (see [Comments System](#-comments-system)).
-- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus per-project case-study pages with clickable tech chips.
+- **Article detail** — server-rendered MDX (GitHub-flavored markdown), optional cover image figure, Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
+- **Comments** — custom, GitHub-gated comment threads under every article **and** project case study (see [Comments System](#-comments-system)).
+- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: cover image, TOC rail, author card, comments, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
 - **About** — author bio, journey timeline, and toolbelt, all editable from the CMS.
 - **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
 - **Dark mode** — light/dark toggle persisted in `localStorage` (`buildlog-theme`) and applied before first paint; default is light.
 - **Command-palette search** — global search over published posts and projects (**Ctrl/Cmd+K**), backed by the public `/api/search` endpoint.
+- **Toasts** — brutalist ink-bordered confirmations for every action (publish, archive, feature, delete, comment, reply, like, edit, link copy, history clear, sign in/out). Desktop-only (`sm+`); mobile stays clean. A "Signed in as …" greeting fires once per real sign-in, never on browser reopen.
 - **SEO** — per-route metadata, Open Graph tags, canonical URLs, and JSON-LD (`Article` / `ProfilePage` / `ItemList`) on detail and index pages.
 
 ### Admin CMS (`/admin`)
@@ -61,8 +62,9 @@
 - Optional **single-admin allowlist** via `ADMIN_EMAIL`.
 - Dashboard with content stats and quick actions.
 - Full **CRUD for posts and projects**: create, edit, publish/unpublish, feature/unfeature, archive, delete.
+- **Publish-date control** — every post/project form has a date picker plus a **Today** button; pick an older date to back-date the entry (its `publishedAt` *and* creation date move, so lists and sorting treat it as published that day). Leaving it blank keeps the existing date / stamps "now" on publish.
 - **About page editor** — bio, journey milestones, and skills, all managed from `/admin/about`.
-- **Comment moderation** (`/admin/comments`) — threads grouped by post, reply / one-time like / inline edit / cascade delete (see [Comments System](#-comments-system)).
+- **Comment moderation** (`/admin/comments`) — **Posts / Projects filter tabs**, threads grouped by source entry, reply / one-time like / inline edit / cascade delete, with counts that refresh live after every mutation (see [Comments System](#-comments-system)).
 - Markdown editor with **live client-side preview** tab.
 - Status workflow: posts `draft → published → archived`; projects `active ↔ shipped`, with `archived` as the private "shelved" state (hidden from the public site, like post drafts).
 - Fully **responsive** — mobile-optimised lists, forms, and an icon-only admin nav.
@@ -298,7 +300,7 @@ BuildLog/
 | `/articles` | Article index with category filter, search, pagination, and a recently-viewed strip |
 | `/articles/[slug]` | Article detail: MDX body, TOC, share, view tracking, comments, related posts |
 | `/projects` | Project browser with status/tech filters (`?tech=` deep links) |
-| `/projects/[slug]` | Project case study with MDX narrative |
+| `/projects/[slug]` | Project case study: MDX narrative, TOC rail, author card, comments |
 
 ### Auth & Admin
 | Route | Purpose |
@@ -308,7 +310,7 @@ BuildLog/
 | `/admin/posts`, `/admin/posts/new`, `/admin/posts/[id]/edit` | Post management |
 | `/admin/projects`, `/admin/projects/new`, `/admin/projects/[id]/edit` | Project management |
 | `/admin/about` | About-page editor (bio, milestones, skills) |
-| `/admin/comments` | Comment moderation (threads by post) |
+| `/admin/comments` | Comment moderation (Posts/Projects tabs; threads grouped per post or project) |
 
 ### REST API (admin-only, session-checked)
 | Route | Methods |
@@ -327,7 +329,7 @@ BuildLog/
 | ----- | ------- |
 | `/api/posts/[id]/view` | `POST` — increments a post's view count (public; the client de-dupes with a 30-minute cooldown) |
 | `/api/search?q=` | `GET` — returns up to 5 published posts + 5 projects matching the query (powers the command palette; no auth) |
-| `/api/comments?postId=` | `GET` (threaded comments for an article; no auth) · `POST` (comment/reply — **requires GitHub session**) |
+| `/api/comments?postId=` | `GET` (threaded comments for an article or project; no auth) · `POST` (comment/reply — **requires GitHub session**; site owner is exempt from the cooldown) |
 
 Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; invalid payloads receive `400` with Zod issues.
 
@@ -338,10 +340,10 @@ Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; i
 1. Start the app with valid `MONGODB_URI` + `AUTH_*` variables.
 2. Visit `/admin` → you are redirected to `/login` → click **Continue with GitHub**.
 3. On first sign-in, Auth.js creates your user document in MongoDB and issues a JWT session (stored in an http-only cookie).
-4. **Posts**: title, excerpt, category, tags, cover image, status (`draft`/`published`/`archived`), featured flag, SEO title/description, and the MDX body. The **Preview** tab renders the markdown client-side as you type.
-5. **Projects**: name, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`/`archived`), featured flag, MDX case-study body. The row actions include an archive button that hides the project from every public page.
+4. **Posts**: title, excerpt, category, tags, cover image, status (`draft`/`published`/`archived`), featured flag, **publish date** (back-date + Today button), SEO title/description, and the MDX body. The **Preview** tab renders the markdown client-side as you type.
+5. **Projects**: name, description, technologies, image, GitHub/live URLs, status (`active`/`shipped`/`archived`), featured flag, **publish date**, MDX case-study body. The row actions include an archive button that hides the project from every public page.
 6. **About**: bio text, journey milestones (year/title/description), and the skills grid — edited as a single document.
-7. **Comments**: expand a post's accordion to see its threads (newest activity first); like once, reply once, edit your replies via the ⋮ menu, or trash a whole thread.
+7. **Comments**: switch between the **Posts** and **Projects** tabs, expand an entry's accordion to see its threads (newest activity first); like once, reply once, edit your replies via the ⋮ menu, or trash a whole thread. Every mutation toasts and updates the counts instantly.
 8. Row actions on the list pages let you publish/unpublish, feature, and delete (with two-step confirm) without opening the editor.
 9. Sign out from the admin top bar.
 
@@ -359,21 +361,24 @@ Article and project bodies are stored as **MDX strings in MongoDB** and compiled
 
 Supported markdown in the editor: headings, paragraphs, GFM tables, fenced code with language tags, blockquotes, ordered/unordered lists, links, images, bold/italic/inline code.
 
+**Inline images**: drop a `![alt](https://…)` line anywhere in the body (or a plain `<img>` for size/alignment control). Any hosted URL works — e.g. ImageKit — and images automatically get the ink-border + hard-shadow treatment at the prose width.
+
 ---
 
 ## 💬 Comments System
 
 A MongoDB-backed comment engine — no third-party widgets. Comments live in the `comments` collection (`postId`, `parentId`, `body`, author snapshot, `likedBy`/`likedByNames`) and are exposed through `/api/comments*`.
 
-### For readers (article pages)
+### For readers (article & project pages)
 - **GitHub gate** — signed-out visitors see a sign-in banner; the composer only renders for authenticated GitHub users.
 - Threaded replies with a collapsible **Replies** toggle per thread.
 - The **3 newest threads** are shown; older discussion stays in the DB and the moderation queue.
 - Admin likes surface as a heart badge on the public comment.
 - Reader comments are **read-only** on the public site; moderation is admin-side.
-- Anti-spam: 60-second posting cooldown per user + Zod length validation (2–2000 chars).
+- Anti-spam: 60-second posting cooldown per user + Zod length validation (2–2000 chars). The site owner (`ADMIN_EMAIL`) is exempt, so replying right after commenting works instantly.
 
 ### For the owner (`/admin/comments`)
+- **Posts / Projects tabs** — moderate article and case-study threads separately, each tab showing its live comment count.
 - Threads grouped per post, sorted by latest activity; posts with no activity for 7 days collapse under an `Older (N)` toggle.
 - **Like** — admin-only, one-time, permanent (no unlike endpoint).
 - **Reply** — one reply per comment.
@@ -392,6 +397,7 @@ The visual language is **neo-brutalism**, specified in [`DESIGN.md`](DESIGN.md) 
 - **Palette**: warm paper surfaces with a vermilion primary (`#AB2F00`) plus Material-style semantic tokens (`surface`, `on-surface`, `primary`, `secondary-fixed-dim`, …).
 - **Dark mode**: a `.dark` block overrides ~50 of those `@theme` tokens (surfaces, ink, badges flip), so every token-driven utility — and the ink shadows/borders above — inverts automatically. Boundaries that are meant to stay dark (the hero terminal) use literal colors instead of tokens.
 - **Typography**: *Newsreader* serif for display headings and article prose, *Plus Jakarta Sans* for UI/body, *JetBrains Mono* for code and mono labels, plus Material Symbols Outlined icons — all self-hosted via `next/font` (see [`app/layout.tsx`](app/layout.tsx)).
+- **Toasts** — one shared provider (`components/shared/Toast.tsx`) renders a bottom-right stack: ink border, `4px 4px` hard shadow, mono text, slide-up entrance, 2.8s auto-dismiss. Hidden below `sm` (640px) — mobile shows no toasts at all.
 
 All components consume these tokens — never hardcode hex values in components (the always-dark terminal chrome is the one deliberate exception).
 
