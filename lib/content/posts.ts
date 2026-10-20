@@ -1,6 +1,7 @@
 import computeReadingTime from "reading-time";
 import { Types } from "mongoose";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { cached } from "@/lib/content/cached";
 import { dbConnect } from "@/lib/db/mongodb";
 import { PostModel, serializePost, type IPost } from "@/lib/db/models/Post";
 import type { Post, PostSummary } from "@/types/post";
@@ -79,7 +80,7 @@ async function getPublishedPostsUncached(query: PostQuery = {}) {
 
 // Public reads are cached across requests and invalidated instantly when any
 // post mutation calls revalidateTag("posts").
-export const getPublishedPosts = unstable_cache(getPublishedPostsUncached, ["getPublishedPosts"], {
+export const getPublishedPosts = cached(getPublishedPostsUncached, ["getPublishedPosts"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -90,7 +91,7 @@ async function getPostBySlugUncached(slug: string): Promise<Post | null> {
   return doc ? serializePost(doc as never) : null;
 }
 
-export const getPostBySlug = unstable_cache(getPostBySlugUncached, ["getPostBySlug"], {
+export const getPostBySlug = cached(getPostBySlugUncached, ["getPostBySlug"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -124,7 +125,7 @@ async function getLatestPostsUncached(limit = 3): Promise<PostSummary[]> {
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
-export const getLatestPosts = unstable_cache(getLatestPostsUncached, ["getLatestPosts"], {
+export const getLatestPosts = cached(getLatestPostsUncached, ["getLatestPosts"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -140,7 +141,7 @@ async function getFeaturedPostUncached(): Promise<PostSummary | null> {
   return doc ? toSummary(serializePost(doc as never)) : null;
 }
 
-export const getFeaturedPost = unstable_cache(getFeaturedPostUncached, ["getFeaturedPost"], {
+export const getFeaturedPost = cached(getFeaturedPostUncached, ["getFeaturedPost"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -178,7 +179,7 @@ async function getRelatedPostsUncached(
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
-const getRelatedPostsCached = unstable_cache(getRelatedPostsUncached, ["getRelatedPosts"], {
+const getRelatedPostsCached = cached(getRelatedPostsUncached, ["getRelatedPosts"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -207,7 +208,7 @@ async function getAdjacentPostsUncached(
   };
 }
 
-const getAdjacentPostsCached = unstable_cache(getAdjacentPostsUncached, ["getAdjacentPosts"], {
+const getAdjacentPostsCached = cached(getAdjacentPostsUncached, ["getAdjacentPosts"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -232,7 +233,7 @@ async function getCategoriesUncached(): Promise<{ name: string; count: number }[
   return rows.map((r) => ({ name: r._id, count: r.count }));
 }
 
-export const getCategories = unstable_cache(getCategoriesUncached, ["getCategories"], {
+export const getCategories = cached(getCategoriesUncached, ["getCategories"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -249,7 +250,7 @@ async function getTagsUncached(): Promise<{ name: string; count: number }[]> {
   return rows.map((r) => ({ name: r._id, count: r.count }));
 }
 
-export const getTags = unstable_cache(getTagsUncached, ["getTags"], {
+export const getTags = cached(getTagsUncached, ["getTags"], {
   tags: ["posts"],
   revalidate: 300,
 });
@@ -274,7 +275,7 @@ async function getPostStatsUncached() {
 // Home and About render this on every request; without the cache their
 // navigations trail Articles/Projects (whose reads are all cached).
 // Post mutations revalidateTag("posts"), so counts stay fresh after edits.
-export const getPostStats = unstable_cache(getPostStatsUncached, ["getPostStats"], {
+export const getPostStats = cached(getPostStatsUncached, ["getPostStats"], {
   tags: ["posts"],
   revalidate: 300,
 });

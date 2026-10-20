@@ -1,4 +1,5 @@
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { cached } from "@/lib/content/cached";
 import { dbConnect } from "@/lib/db/mongodb";
 import { AboutModel, serializeAbout } from "@/lib/db/models/About";
 import type { AboutContent, AboutInput } from "@/types/about";
@@ -67,7 +68,7 @@ async function getAboutContentUncached(): Promise<AboutContent> {
 }
 
 // Cached across requests like posts/projects; edits revalidate the "about" tag.
-export const getAboutContent = unstable_cache(
+export const getAboutContent = cached(
   getAboutContentUncached,
   ["getAboutContent"],
   { tags: ["about"], revalidate: 300 },
