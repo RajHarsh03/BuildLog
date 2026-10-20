@@ -1,14 +1,16 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { MarkdownPreview } from "@/components/admin/MarkdownPreview";
 import { PublishDateField, toDateInputValue } from "@/components/admin/PublishDateField";
+import { useFormAutosave } from "@/components/admin/useFormAutosave";
+import { registerDraftSaver } from "@/lib/client/formGuard";
 import { useToast } from "@/components/shared/Toast";
 import { SelectDropdown } from "@/components/admin/SelectDropdown";
-import { cn } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import type { Post, PostStatus } from "@/types/post";
 
 interface PostFormProps {
@@ -27,6 +29,7 @@ export function PostForm({ post }: PostFormProps) {
   const isEdit = Boolean(post);
 
   const [title, setTitle] = useState(post?.title ?? "");
+  const [slug, setSlug] = useState(post?.slug ?? "");
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [category, setCategory] = useState(post?.category ?? "");
   const [tags, setTags] = useState((post?.tags ?? []).join(", "));
@@ -43,6 +46,95 @@ export function PostForm({ post }: PostFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // localStorage safety-net: accidental nav / refresh / crash never loses the draft.
+  const { clearAutosave } = useFormAutosave({
+    storageKey: `buildlog-autosave-post-${post?._id ?? "new"}`,
+    values: {
+      title,
+      slug,
+      excerpt,
+      category,
+      tags,
+      coverImage,
+      content,
+      status,
+      featured,
+      publishDate,
+      seoTitle,
+      seoDescription,
+      seoImage,
+    },
+    onRestore: (s) => {
+      if (typeof s.title === "string") setTitle(s.title);
+      if (typeof s.slug === "string") setSlug(s.slug);
+      if (typeof s.excerpt === "string") setExcerpt(s.excerpt);
+      if (typeof s.category === "string") setCategory(s.category);
+      if (typeof s.tags === "string") setTags(s.tags);
+      if (typeof s.coverImage === "string") setCoverImage(s.coverImage);
+      if (typeof s.content === "string") setContent(s.content);
+      if (s.status) setStatus(s.status);
+      if (typeof s.featured === "boolean") setFeatured(s.featured);
+      if (typeof s.publishDate === "string") setPublishDate(s.publishDate);
+      if (typeof s.seoTitle === "string") setSeoTitle(s.seoTitle);
+      if (typeof s.seoDescription === "string") setSeoDescription(s.seoDescription);
+      if (typeof s.seoImage === "string") setSeoImage(s.seoImage);
+      toast("Draft restored from this browser", "info");
+    },
+  });
+
+  // Leaving mid-edit via the admin nav persists a REAL draft in the DB.
+  const saveDraftToDb = useCallback(async () => {
+    if (!title.trim() || !category.trim()) return false;
+    const res = await fetch(isEdit ? `/api/posts/${post!._id}` : "/api/posts", {
+      method: isEdit ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: title.trim(),
+        slug: slug.trim(),
+        excerpt: excerpt.trim(),
+        content,
+        category: category.trim(),
+        tags: tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+        coverImage: coverImage.trim(),
+        status: "draft",
+        featured,
+        ...(publishDate
+          ? { publishedAt: new Date(`${publishDate}T12:00:00`).toISOString() }
+          : {}),
+        seoTitle: seoTitle.trim(),
+        seoDescription: seoDescription.trim(),
+        seoImage: seoImage.trim(),
+      }),
+    });
+    if (!res.ok) return false;
+    clearAutosave();
+    return true;
+  }, [
+    title,
+    slug,
+    excerpt,
+    category,
+    tags,
+    coverImage,
+    content,
+    featured,
+    publishDate,
+    seoTitle,
+    seoDescription,
+    seoImage,
+    isEdit,
+    post,
+    clearAutosave,
+  ]);
+
+  useEffect(() => {
+    registerDraftSaver(saveDraftToDb);
+    return () => registerDraftSaver(null);
+  }, [saveDraftToDb]);
+
   const submitLabel =
     status === "published" ? "Publish" : status === "archived" ? "Archive" : "Save draft";
 
@@ -57,6 +149,7 @@ export function PostForm({ post }: PostFormProps) {
 
     const payload = {
       title: title.trim(),
+      slug: slug.trim(),
       excerpt: excerpt.trim(),
       content,
       category: category.trim(),
@@ -86,6 +179,7 @@ export function PostForm({ post }: PostFormProps) {
       toast(
         status === "published" ? "Post published" : status === "archived" ? "Post archived" : "Draft saved",
       );
+      clearAutosave();
       router.push("/admin/posts");
       router.refresh();
     } catch (err) {
@@ -118,6 +212,23 @@ export function PostForm({ post }: PostFormProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What I learned shipping…"
             />
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="slug">
+              URL Slug
+            </label>
+            <input
+              id="slug"
+              className={cn(inputClass, "font-mono-code text-mono-code")}
+              value={slug || (isEdit ? "" : slugify(title))}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+              placeholder="auto-from-title"
+            />
+            <p className="font-mono-code text-[11px] text-on-surface-variant mt-1.5">
+              Live URL becomes <span className="text-on-surface">/articles/{slug || slugify(title) || "…"}</span>
+              {isEdit && " — changing it breaks previously shared links."}
+            </p>
           </div>
 
           <div>
