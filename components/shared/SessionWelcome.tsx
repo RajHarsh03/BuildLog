@@ -3,8 +3,10 @@
 import { useEffect, useRef } from "react";
 import { useToast } from "@/components/shared/Toast";
 
-/** sessionStorage key holding the greeted identity; cleared on sign-out so a
- * fresh sign-in toasts again (admin or public), even in the same tab. */
+/** localStorage key holding the greeted identity. localStorage (not session)
+ * so closing/reopening the browser with a live session does NOT re-greet —
+ * the toast fires only on a real sign-in, and sign-out clears this to arm it
+ * for the next one. */
 export const SIGNED_IN_FLAG = "buildlog-signed-in-as";
 
 /**
@@ -27,9 +29,10 @@ export function SessionWelcome() {
         const name = (s as { user?: { name?: string | null } } | null)?.user?.name;
         if (!name) return;
         try {
-          // Greet once per identity: re-signing after a sign-out toasts again.
-          if (sessionStorage.getItem(SIGNED_IN_FLAG) === name) return;
-          sessionStorage.setItem(SIGNED_IN_FLAG, name);
+          // Greet once per sign-in event: a returning visit with the same
+          // stored identity stays silent until the next real sign-in.
+          if (localStorage.getItem(SIGNED_IN_FLAG) === name) return;
+          localStorage.setItem(SIGNED_IN_FLAG, name);
         } catch {
           /* storage disabled: greet anyway */
         }

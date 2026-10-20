@@ -25,8 +25,9 @@ export function SignOutButton({
       type="button"
       onClick={() => {
         onSignedOut?.();
-        // Allow the next sign-in (same tab) to greet again.
+        // Allow the next sign-in to greet again.
         try {
+          localStorage.removeItem(SIGNED_IN_FLAG);
           sessionStorage.removeItem(SIGNED_IN_FLAG);
         } catch {
           /* storage disabled */

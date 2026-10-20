@@ -367,6 +367,7 @@ export function Comments({ postId }: { postId: string }) {
                     onClick={() => {
                       // Let the next sign-in greet again, then toast + stay on page.
                       try {
+                        localStorage.removeItem(SIGNED_IN_FLAG);
                         sessionStorage.removeItem(SIGNED_IN_FLAG);
                       } catch {
                         /* storage disabled */
