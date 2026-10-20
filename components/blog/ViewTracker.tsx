@@ -19,15 +19,19 @@ const stampKey = (postId: string) => `buildlog-view:${postId}`;
  */
 export function ViewTracker({
   postId,
-  initial,
+  initial = 0,
   slug,
   title,
+  resource = "posts",
 }: {
   postId: string;
-  initial: number;
+  /** May be undefined when a cached payload predates the views field. */
+  initial?: number;
   /** When provided, the visit is also saved to the reader's local history. */
   slug?: string;
   title?: string;
+  /** Which content type this page belongs to - picks the view endpoint. */
+  resource?: "posts" | "projects";
 }) {
   const [views, setViews] = useState<number | null>(null);
 
@@ -53,7 +57,7 @@ export function ViewTracker({
     }
 
     // Fresh visit bumps the counter; a revisit just reads the current total.
-    fetch(`/api/posts/${postId}/view`, { method: isFreshVisit ? "POST" : "GET" })
+    fetch(`/api/${resource}/${postId}/view`, { method: isFreshVisit ? "POST" : "GET" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && typeof data?.views === "number") setViews(data.views);
@@ -62,12 +66,12 @@ export function ViewTracker({
     return () => {
       cancelled = true;
     };
-  }, [postId, slug, title]);
+  }, [postId, slug, title, resource]);
 
   // Nothing trustworthy yet: render no element at all (avoids "0 views").
-  if (views === null && initial === 0) return null;
+  if (views === null && !initial) return null;
 
-  const count = views ?? initial;
+  const count = views ?? initial ?? 0;
 
   return (
     <>
