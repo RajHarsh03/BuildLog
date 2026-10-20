@@ -236,7 +236,7 @@ export default async function AboutPage() {
                 <span>On The Bench</span>
               </div>
               <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
-                Currently Building
+                {project.status === "shipped" ? "Recently Shipped" : "Currently Building"}
               </h2>
             </div>
             <div className="bg-mint-soft border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">

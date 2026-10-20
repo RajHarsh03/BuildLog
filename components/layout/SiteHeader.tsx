@@ -6,9 +6,11 @@ import { WORDMARK_URL, author } from "@/lib/utils";
 
 interface SiteHeaderProps {
   nowBuilding?: string;
+  /** Featured project already shipped - chip switches wording. */
+  shipped?: boolean;
 }
 
-export function SiteHeader({ nowBuilding = "AI Code Reviewer" }: SiteHeaderProps) {
+export function SiteHeader({ nowBuilding = "AI Code Reviewer", shipped = false }: SiteHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b-2 border-[var(--color-ink)]">
       <div className="h-20 w-full px-5 sm:px-8 flex items-center justify-between gap-4">
@@ -32,7 +34,7 @@ export function SiteHeader({ nowBuilding = "AI Code Reviewer" }: SiteHeaderProps
               <span className="relative inline-flex rounded-full h-2 w-2 bg-mint" />
             </span>
             <span className="font-label-sm text-label-sm uppercase font-bold text-mint-ink tracking-wider">
-              Now building:
+              {shipped ? "Just shipped:" : "Now building:"}
             </span>
             <span className="font-label-sm text-label-sm font-bold text-mint-ink">
               {nowBuilding}

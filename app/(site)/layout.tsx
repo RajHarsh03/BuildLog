@@ -10,18 +10,19 @@ import { getFeaturedProject } from "@/lib/content/projects";
 export const dynamic = "force-dynamic";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  // Header shows the "NOW BUILDING" chip from the latest featured active project.
-  let nowBuilding = "AI Code Reviewer";
+  // Header chip spotlights the featured project; wording follows its status
+  // ("Now building" only while the project is still active).
+  let nowBuilding = { name: "AI Code Reviewer", status: "active" as string };
   try {
     const project = await getFeaturedProject();
-    if (project) nowBuilding = project.name;
+    if (project) nowBuilding = { name: project.name, status: project.status };
   } catch {
     // Public site must still render if the DB is unavailable.
   }
 
   return (
     <>
-      <SiteHeader nowBuilding={nowBuilding} />
+      <SiteHeader nowBuilding={nowBuilding.name} shipped={nowBuilding.status === "shipped"} />
       {/* Fixed header (h-20) + compact mobile nav row; offset content accordingly. */}
       <main className="w-full pt-[132px] md:pt-20 pb-16 bg-background flex-1">{children}</main>
       <SiteFooter />

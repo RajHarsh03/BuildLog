@@ -3,8 +3,11 @@ import { Icon } from "@/components/shared/Icon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { ProjectSummary } from "@/types/project";
 
-/** "Currently Building" spotlight card driven by the latest featured active project. */
+/** Featured-project spotlight card; the label follows the project's status. */
 export function CurrentlyBuilding({ project }: { project: ProjectSummary }) {
+  // "Building" wording is only true while the project is active - a shipped
+  // featured project gets shipped wording (the dot keeps pulsing either way).
+  const shipped = project.status === "shipped";
   return (
     <section className="w-full">
       <div className="bg-mint-soft border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)] rounded-lg p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all">
@@ -16,7 +19,7 @@ export function CurrentlyBuilding({ project }: { project: ProjectSummary }) {
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-mint sm:h-2.5 sm:w-2.5" />
               </span>
               <span className="font-mono-code text-[10px] uppercase font-bold tracking-wider text-on-surface sm:font-label-sm sm:text-label-sm">
-                CURRENTLY BUILDING
+                {shipped ? "RECENTLY SHIPPED" : "CURRENTLY BUILDING"}
               </span>
             </div>
             <span className="sm:hidden">
