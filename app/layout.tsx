@@ -55,8 +55,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `try{var t=localStorage.getItem("buildlog-theme");if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}`,
           }}
         />
+        {/* Icon glyphs ARE ligature text ("search" renders as the magnifier),
+            so Google's default display=swap briefly paints the raw names on
+            every refresh. display=block keeps icons invisible for the few ms
+            the font needs instead; preconnect starts the handshake early. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
           rel="stylesheet"
         />
       </head>
