@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "@/components/shared/Icon";
 import { SignOutButton } from "@/components/admin/SignOutButton";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { isFormDirty, runDraftSaver } from "@/lib/client/formGuard";
+import { useToast } from "@/components/shared/Toast";
 import { WORDMARK_URL } from "@/lib/utils";
 
 interface AdminNavProps {
@@ -25,8 +27,31 @@ const LINKS = [
 /** Sticky admin top bar styled identically to the public site header. */
 export function AdminNav({ userName, userImage }: AdminNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Link clicked while an admin form had unsaved edits → confirm dialog.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  function guardClick(e: React.MouseEvent, href: string) {
+    if (isFormDirty()) {
+      e.preventDefault();
+      setPendingHref(href);
+    }
+  }
+
+  async function confirmLeave() {
+    if (!pendingHref) return;
+    const href = pendingHref;
+    setPendingHref(null);
+    // Leaving mid-edit: persist a real draft to the DB first, then navigate.
+    const saved = await runDraftSaver();
+    if (saved === true) toast("Saved as draft", "success");
+    else if (saved === false)
+      toast("Couldn't auto-save draft — it stays in this browser", "error");
+    router.push(href);
+  }
 
   // Close the avatar menu on outside click or Escape.
   useEffect(() => {
@@ -72,6 +97,7 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={(e) => guardClick(e, link.href)}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
                   "px-3 py-1 rounded-sm transition-all whitespace-nowrap",
@@ -146,6 +172,7 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
               <Link
                 key={l.href}
                 href={l.href}
+                onClick={(e) => guardClick(e, l.href)}
                 aria-label={l.label}
                 title={l.label}
                 className={clsx(
@@ -161,6 +188,48 @@ export function AdminNav({ userName, userImage }: AdminNavProps) {
           })}
         </nav>
       </div>
+
+      {/* Unsaved-changes confirm: edits are autosaved locally, so leaving is safe. */}
+      {pendingHref && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/55"
+            onClick={() => setPendingHref(null)}
+            aria-hidden
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Unsaved changes"
+            className="toast-in relative w-full max-w-sm bg-surface-container-lowest border-2 border-[var(--color-ink)] rounded-lg shadow-[6px_6px_0px_0px_var(--color-ink)] p-6 space-y-4"
+          >
+            <div className="flex items-center gap-2 font-mono-code text-label-sm uppercase tracking-wider font-bold text-on-surface">
+              <Icon name="warning" size={18} className="text-[#92400E] shrink-0" />
+              Unsaved changes
+            </div>
+            <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Leaving now saves your work as a draft in the CMS automatically.
+              A local browser copy is kept as a backup until you save or publish.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setPendingHref(null)}
+                className="px-3 py-1.5 font-mono-code text-label-sm font-bold uppercase tracking-wider rounded border-2 border-[var(--color-ink)] bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:shadow-[2px_2px_0px_0px_var(--color-ink)] transition-all"
+              >
+                Stay
+              </button>
+              <button
+                type="button"
+                onClick={confirmLeave}
+                className="px-3 py-1.5 font-mono-code text-label-sm font-bold uppercase tracking-wider rounded border-2 border-[var(--color-ink)] bg-primary-container text-on-primary-container shadow-[2px_2px_0px_0px_var(--color-ink)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_var(--color-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+              >
+                Save draft &amp; leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
