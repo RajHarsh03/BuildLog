@@ -12,6 +12,7 @@ export interface IProject {
   liveUrl?: string;
   status: ProjectStatus;
   featured: boolean;
+  views: number;
   publishedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +37,7 @@ const ProjectSchema = new Schema<IProject>(
       index: true,
     },
     featured: { type: Boolean, default: false },
+    views: { type: Number, default: 0, min: 0 },
     publishedAt: { type: Date, index: true },
   },
   { timestamps: true },
@@ -65,6 +67,7 @@ export function serializeProject(
     liveUrl: obj.liveUrl,
     status: obj.status,
     featured: obj.featured ?? false,
+    views: obj.views ?? 0,
     publishedAt: obj.publishedAt ? new Date(obj.publishedAt).toISOString() : undefined,
     createdAt: new Date(obj.createdAt).toISOString(),
     updatedAt: new Date(obj.updatedAt).toISOString(),

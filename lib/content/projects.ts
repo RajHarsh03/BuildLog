@@ -1,4 +1,5 @@
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { cached } from "@/lib/content/cached";
 import { dbConnect } from "@/lib/db/mongodb";
 import { ProjectModel, serializeProject, type IProject } from "@/lib/db/models/Project";
 import type { Project, ProjectSummary, ProjectStatus } from "@/types/project";
@@ -39,7 +40,7 @@ async function getProjectsUncached(status?: ProjectStatus | "all"): Promise<Proj
 }
 
 // Public reads are cached across requests; mutations call revalidateTag("projects").
-export const getProjects = unstable_cache(getProjectsUncached, ["getProjects"], {
+export const getProjects = cached(getProjectsUncached, ["getProjects"], {
   tags: ["projects"],
   revalidate: 300,
 });
@@ -76,7 +77,7 @@ async function getFeaturedProjectUncached(): Promise<ProjectSummary | null> {
   return doc ? toSummary(serializeProject(doc as never)) : null;
 }
 
-export const getFeaturedProject = unstable_cache(
+export const getFeaturedProject = cached(
   getFeaturedProjectUncached,
   ["getFeaturedProject"],
   { tags: ["projects"], revalidate: 300 },
@@ -89,7 +90,7 @@ async function getProjectBySlugUncached(slug: string): Promise<Project | null> {
   return doc ? serializeProject(doc as never) : null;
 }
 
-export const getProjectBySlug = unstable_cache(getProjectBySlugUncached, ["getProjectBySlug"], {
+export const getProjectBySlug = cached(getProjectBySlugUncached, ["getProjectBySlug"], {
   tags: ["projects"],
   revalidate: 300,
 });
@@ -127,7 +128,7 @@ async function getProjectStatusCountsUncached(): Promise<Record<string, number>>
   return counts;
 }
 
-export const getProjectStatusCounts = unstable_cache(
+export const getProjectStatusCounts = cached(
   getProjectStatusCountsUncached,
   ["getProjectStatusCounts"],
   { tags: ["projects"], revalidate: 300 },
@@ -182,6 +183,25 @@ export async function updateProject(
   }
   revalidateTag("projects");
   return doc ? serializeProject(doc) : null;
+}
+
+/** Read-only view count (no bump) - used for revisits inside the cooldown. */
+export async function getProjectViews(id: string): Promise<number | null> {
+  await dbConnect();
+  const doc = await ProjectModel.findById(id).select("views").lean();
+  return doc ? (doc.views ?? 0) : null;
+}
+
+/** Atomic per-visitor view bump; returns the fresh count. Deliberately does
+ * NOT revalidate caches - mirrors incrementPostViews (see posts.ts). */
+export async function incrementProjectViews(id: string): Promise<number | null> {
+  await dbConnect();
+  const doc = await ProjectModel.findByIdAndUpdate(
+    id,
+    { $inc: { views: 1 } },
+    { new: true, timestamps: false },
+  ).lean();
+  return doc ? (doc.views ?? 0) : null;
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
