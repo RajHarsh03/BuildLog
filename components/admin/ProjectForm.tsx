@@ -1,14 +1,16 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { MarkdownPreview } from "@/components/admin/MarkdownPreview";
 import { PublishDateField, toDateInputValue } from "@/components/admin/PublishDateField";
+import { useFormAutosave } from "@/components/admin/useFormAutosave";
+import { registerDraftSaver } from "@/lib/client/formGuard";
 import { useToast } from "@/components/shared/Toast";
 import { SelectDropdown } from "@/components/admin/SelectDropdown";
-import { cn } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import type { Project, ProjectStatus } from "@/types/project";
 
 interface ProjectFormProps {
@@ -27,6 +29,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const isEdit = Boolean(project);
 
   const [name, setName] = useState(project?.name ?? "");
+  const [slug, setSlug] = useState(project?.slug ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
   const [technologies, setTechnologies] = useState(
     (project?.technologies ?? []).join(", "),
@@ -43,6 +46,92 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // localStorage safety-net: accidental nav / refresh / crash never loses the draft.
+  const { clearAutosave } = useFormAutosave({
+    storageKey: `buildlog-autosave-project-${project?._id ?? "new"}`,
+    values: {
+      name,
+      slug,
+      description,
+      technologies,
+      image,
+      githubUrl,
+      liveUrl,
+      content,
+      status,
+      featured,
+      publishDate,
+    },
+    onRestore: (s) => {
+      if (typeof s.name === "string") setName(s.name);
+      if (typeof s.slug === "string") setSlug(s.slug);
+      if (typeof s.description === "string") setDescription(s.description);
+      if (typeof s.technologies === "string") setTechnologies(s.technologies);
+      if (typeof s.image === "string") setImage(s.image);
+      if (typeof s.githubUrl === "string") setGithubUrl(s.githubUrl);
+      if (typeof s.liveUrl === "string") setLiveUrl(s.liveUrl);
+      if (typeof s.content === "string") setContent(s.content);
+      if (s.status) setStatus(s.status);
+      if (typeof s.featured === "boolean") setFeatured(s.featured);
+      if (typeof s.publishDate === "string") setPublishDate(s.publishDate);
+      toast("Draft restored from this browser", "info");
+    },
+  });
+
+  // Leaving mid-edit via the admin nav persists the edits to the DB. Projects
+  // have no draft state, so the auto-save lands as archived (private) - the
+  // project goes back to hidden until you re-ship it deliberately.
+  const saveDraftToDb = useCallback(async () => {
+    if (!name.trim()) return false;
+    const res = await fetch(
+      isEdit ? `/api/projects/${project!._id}` : "/api/projects",
+      {
+        method: isEdit ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          slug: slug.trim(),
+          description: description.trim(),
+          content,
+          technologies: technologies
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean),
+          image: image.trim(),
+          githubUrl: githubUrl.trim(),
+          liveUrl: liveUrl.trim(),
+          status: "archived",
+          featured,
+          ...(publishDate
+            ? { publishedAt: new Date(`${publishDate}T12:00:00`).toISOString() }
+            : {}),
+        }),
+      },
+    );
+    if (!res.ok) return false;
+    clearAutosave();
+    return true;
+  }, [
+    name,
+    slug,
+    description,
+    content,
+    technologies,
+    image,
+    githubUrl,
+    liveUrl,
+    featured,
+    publishDate,
+    isEdit,
+    project,
+    clearAutosave,
+  ]);
+
+  useEffect(() => {
+    registerDraftSaver(saveDraftToDb);
+    return () => registerDraftSaver(null);
+  }, [saveDraftToDb]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -54,6 +143,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
     const payload = {
       name: name.trim(),
+      slug: slug.trim(),
       description: description.trim(),
       content,
       technologies: technologies
@@ -84,6 +174,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       toast(
         status === "shipped" ? "Project shipped" : status === "archived" ? "Project archived" : "Project saved",
       );
+      clearAutosave();
       router.push("/admin/projects");
       router.refresh();
     } catch (err) {
@@ -116,6 +207,23 @@ export function ProjectForm({ project }: ProjectFormProps) {
               onChange={(e) => setName(e.target.value)}
               placeholder="AI Code Reviewer"
             />
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="slug">
+              URL Slug
+            </label>
+            <input
+              id="slug"
+              className={cn(inputClass, "font-mono-code text-mono-code")}
+              value={slug || (isEdit ? "" : slugify(name))}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+              placeholder="auto-from-name"
+            />
+            <p className="font-mono-code text-[11px] text-on-surface-variant mt-1.5">
+              Live URL becomes <span className="text-on-surface">/projects/{slug || slugify(name) || "…"}</span>
+              {isEdit && " — changing it breaks previously shared links."}
+            </p>
           </div>
 
           <div>
