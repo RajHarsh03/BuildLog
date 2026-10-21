@@ -191,21 +191,46 @@ export function getRelatedPosts(post: Post, limit = 3): Promise<PostSummary[]> {
 async function getAdjacentPostsUncached(
   publishedAt: string | null,
   createdAt: string,
+  category: string,
+  excludeId: string,
 ): Promise<{ prev: PostSummary | null; next: PostSummary | null }> {
   await dbConnect();
   const base = publishedAt ? new Date(publishedAt) : new Date(createdAt);
-  const [prev, next] = await Promise.all([
-    PostModel.findOne({ status: "published", publishedAt: { $lt: base } })
-      .sort({ publishedAt: -1 })
-      .lean(),
-    PostModel.findOne({ status: "published", publishedAt: { $gt: base } })
-      .sort({ publishedAt: 1 })
-      .lean(),
-  ]);
-  return {
+  const toPair = (
+    prev: (IPost & { _id: unknown }) | null,
+    next: (IPost & { _id: unknown }) | null,
+  ) => ({
     prev: prev ? toSummary(serializePost(prev as never)) : null,
     next: next ? toSummary(serializePost(next as never)) : null,
-  };
+  });
+
+  // Per-side rule: prev = older publishedAt in the SAME category, next =
+  // newer publishedAt in the SAME category. Each side independently falls
+  // back to global chronological when the category has nothing on that
+  // side - and only hides if nothing exists globally either.
+  //
+  // Same-day back-dates produce IDENTICAL publishedAt values (both noon),
+  // so strict $lt/$gt would make those posts invisible to each other. The
+  // _id tie-break keeps ordering deterministic for equal timestamps.
+  const oid = new Types.ObjectId(excludeId);
+  const older = (extra: Record<string, unknown>) => ({
+    status: "published",
+    ...extra,
+    $or: [{ publishedAt: { $lt: base } }, { publishedAt: base, _id: { $lt: oid } }],
+  });
+  const newer = (extra: Record<string, unknown>) => ({
+    status: "published",
+    ...extra,
+    $or: [{ publishedAt: { $gt: base } }, { publishedAt: base, _id: { $gt: oid } }],
+  });
+  const catFilter = { category, _id: { $ne: oid } };
+  const [catPrev, catNext, globPrev, globNext] = await Promise.all([
+    PostModel.findOne(older(catFilter)).sort({ publishedAt: -1, _id: -1 }).lean(),
+    PostModel.findOne(newer(catFilter)).sort({ publishedAt: 1, _id: 1 }).lean(),
+    PostModel.findOne(older({})).sort({ publishedAt: -1, _id: -1 }).lean(),
+    PostModel.findOne(newer({})).sort({ publishedAt: 1, _id: 1 }).lean(),
+  ]);
+  return toPair(catPrev ?? globPrev, catNext ?? globNext);
 }
 
 const getAdjacentPostsCached = cached(getAdjacentPostsUncached, ["getAdjacentPosts"], {
@@ -220,6 +245,8 @@ export function getAdjacentPosts(post: Post): Promise<{
   return getAdjacentPostsCached(
     post.publishedAt ? String(post.publishedAt) : null,
     String(post.createdAt),
+    post.category,
+    post._id,
   );
 }
 
