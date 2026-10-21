@@ -401,6 +401,11 @@
   margin: 2.5rem 0;
 }
 .mdx-content img {
+  /* Images must never exceed their column: an unconstrained <img> widened
+     the whole document on mobile, which desynced the fixed header and the
+     back-to-top button (both viewport-anchored) from the scrolled content. */
+  max-width: 100%;
+  height: auto;
   border: 2px solid var(--color-ink);
   border-radius: 0.5rem;
   box-shadow: 4px 4px 0px 0px #18181b;
