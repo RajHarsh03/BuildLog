@@ -118,7 +118,17 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
           </div>
 
           {result.posts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            /* Count-aware grid: 1 result fills the row, 2 split evenly,
+               3+ use the standard three-track layout (max 3 across). */
+            <div
+              className={`grid grid-cols-1 gap-6 ${
+                result.posts.length === 1
+                  ? ""
+                  : result.posts.length === 2
+                    ? "md:grid-cols-2"
+                    : "md:grid-cols-2 lg:grid-cols-3"
+              }`}
+            >
               {result.posts.map((post) => (
                 <ArticleCard key={post._id} post={post} />
               ))}
