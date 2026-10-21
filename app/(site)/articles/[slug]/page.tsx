@@ -169,7 +169,9 @@ export default async function ArticlePage({ params }: { params: Params }) {
             </div>
           )}
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
+          {/* Byline row goes horizontal from md - the TOC rail only appears at
+              lg, so between md and lg the text column is full width anyway. */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
             {/* Two atomic groups: they wrap as units, so no dangling dots */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono-code text-[12px] sm:text-mono-code text-on-surface-variant">
               <span className="flex items-center gap-2 whitespace-nowrap">
@@ -206,7 +208,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </aside>
 
           <article
-            className="mdx-content lg:col-span-8 max-w-[720px] lg:max-w-none w-full text-on-surface transition-all"
+            className="mdx-content lg:col-span-8 max-w-[720px] md:max-w-none w-full text-on-surface transition-all"
             id="article-prose"
           >
             {/* Cover sits inside the prose measure so it reads as a figure,
@@ -251,7 +253,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
                 className="group p-5 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all sm:text-right"
                 href={`/articles/${adjacent.next.slug}`}
               >
-                <div className="font-mono-code text-label-sm text-on-surface-variant flex items-center gap-1 mb-2 sm:justify-end">
+                <div className="font-mono-code text-label-sm text-on-surface-variant flex items-center gap-1 mb-2 justify-end">
                   Next
                   <Icon name="arrow_forward" size={14} />
                 </div>
@@ -275,13 +277,15 @@ export default async function ArticlePage({ params }: { params: Params }) {
                   </h3>
                 </div>
               </div>
-              {/* 3-up max: 2 cards each take half the row; a lone card keeps
-                  the 1/3 card size instead of stretching full width. */}
+              {/* Same count-aware sizing as every other grid: a lone card
+                  fills the row, a pair splits it evenly, 3 use thirds. */}
               <div
                 className={
-                  related.length === 2
-                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
-                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                  related.length === 1
+                    ? "grid grid-cols-1 gap-6"
+                    : related.length === 2
+                      ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                      : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 }
               >
                 {related.map((r) => (
