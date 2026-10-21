@@ -47,10 +47,10 @@
 ### Public site
 - **Home** — featured article, latest posts, featured-project spotlight (wording follows the project's status: *Currently building* while `active`, *Recently shipped* once `shipped`), and newsletter callout. The site header carries the same status-aware *Now building / Just shipped* chip on desktop.
 - **Articles** — filterable, paginated index (category + search) at `/articles`.
-- **Article detail** — server-rendered MDX (GitHub-flavored markdown), optional cover image figure, Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, and view counts.
+- **Article detail** — server-rendered MDX (GitHub-flavored markdown), optional cover image figure, Shiki syntax highlighting, auto-generated table of contents, reading time, share links, font-size toggle, view counts, and category-aware prev/next navigation (same-category neighbours first, any-category fallback, deterministic ordering for identical timestamps).
 - **Comments** — custom, GitHub-gated comment threads under every article **and** project case study (see [Comments System](#-comments-system)).
 - **Slug-first breadcrumbs** — detail pages show the entry's (editable) URL slug, humanised (`my-short-url` → `My Short Url`), in the breadcrumb chip instead of the long title, so it never wraps or cuts mid-sentence.
-- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: an identical byline bar (author, date, computed reading time + word count, live view count, font-size toggle, share links), cover image, scroll-spy TOC rail with reading-progress meter, author card, comments, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
+- **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: an identical byline bar (author, date, computed reading time + word count, live view count, font-size toggle, share links), cover image, scroll-spy TOC rail with reading-progress meter, author card, comments, a *More From The Workbench* related-projects footer, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
 - **About** — author bio, journey timeline, toolbelt, and the featured-build *On The Bench* card (also status-worded), all editable from the CMS.
 - **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
 - **Dark mode** — light/dark toggle persisted in `localStorage` (`buildlog-theme`) and applied before first paint; default is light.
@@ -63,7 +63,7 @@
 - Optional **single-admin allowlist** via `ADMIN_EMAIL`.
 - Dashboard with content stats and quick actions.
 - Full **CRUD for posts and projects**: create, edit, publish/unpublish, feature/unfeature, archive, delete.
-- **Publish-date control** — every post/project form has a date picker plus a **Today** button; pick an older date to back-date the entry (its `publishedAt` *and* creation date move, so lists and sorting treat it as published that day). Leaving it blank keeps the existing date / stamps "now" on publish.
+- **Publish-date control** — every post/project form has a date picker plus a **Today** button; pick an older date to back-date the entry (its `publishedAt` *and* creation date move, so lists and sorting treat it as published that day). Leaving it blank keeps the existing date / stamps "now" on publish. **Future dates are blocked** at the picker, clamped while typing, and rejected by the API schema.
 - **Editable URL slug** — a Slug field under the title on both forms: leave it alone to auto-generate from the title, or type a short one (`/articles/bleve-search`). The field previews the live URL and warns that renaming breaks previously shared links.
 - **Never lose a draft** — admin forms autosave to `localStorage` every ~0.7 s. Clicking away with unsaved edits raises an **Unsaved changes** dialog: *Save draft & leave* first persists a real draft in the CMS (posts → `draft`, projects → `archived`/private) and then navigates. Returning to the form restores the local copy with a toast; a successful save/publish clears it.
 - **About page editor** — bio, journey milestones, and skills, all managed from `/admin/about`.
