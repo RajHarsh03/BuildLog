@@ -12,7 +12,7 @@ import { ViewTracker } from "@/components/blog/ViewTracker";
 import { CopyLink } from "@/components/blog/CopyLink";
 import { Comments } from "@/components/blog/Comments";
 import { renderMdx } from "@/lib/mdx/render";
-import { getProjectBySlug } from "@/lib/content/projects";
+import { getProjectBySlug, getProjects } from "@/lib/content/projects";
 import { absoluteUrl, author, formatDate, prettifySlug } from "@/lib/utils";
 
 export const revalidate = 60;
@@ -61,6 +61,10 @@ export default async function ProjectPage({ params }: { params: Params }) {
   if (!project) notFound();
 
   const rendered = project.content ? await renderMdx(project.content) : null;
+  // Related-projects footer: up to 2 other public builds (this one excluded).
+  const otherProjects = (await getProjects("all").catch(() => []))
+    .filter((p) => p._id !== project._id)
+    .slice(0, 2);
   const url = absoluteUrl(`/projects/${project.slug}`);
   const published = project.publishedAt ?? project.createdAt;
   const stats = computeReadingTime(project.content ?? "");
@@ -161,7 +165,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
           )}
 
           {/* Byline bar - identical contract to the article page header. */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-6 border-t border-surface-container-highest">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono-code text-[12px] sm:text-mono-code text-on-surface-variant">
               <span className="flex items-center gap-2 whitespace-nowrap">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -201,7 +205,7 @@ export default async function ProjectPage({ params }: { params: Params }) {
             </aside>
             <article
               id="article-prose"
-              className="mdx-content lg:col-span-8 max-w-[720px] lg:max-w-none w-full text-on-surface"
+              className="mdx-content lg:col-span-8 max-w-[720px] md:max-w-none w-full text-on-surface"
             >
               {/* Cover sits inside the prose measure so it reads as a figure. */}
               {project.image && (
@@ -247,6 +251,61 @@ export default async function ProjectPage({ params }: { params: Params }) {
 
         {/* Same MongoDB-backed comments as articles; readers sign in with GitHub */}
         <Comments postId={project._id} />
+
+        {/* Footer: related projects - same section shape as the article
+            "More From The Journal", but pointing at other case studies. */}
+        {otherProjects.length > 0 && (
+          <footer className="mt-16 pt-12 border-t-2 border-on-surface space-y-12">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-3 h-3 bg-primary border border-on-surface shrink-0" />
+                <h3 className="font-mono-code text-[11px] sm:text-mono-code font-bold uppercase tracking-wide sm:tracking-wider text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">
+                  More From The Workbench
+                </h3>
+              </div>
+              {/* Same sizing contract as the home strip: 1 fills the row,
+                  2 split it evenly. */}
+              <div
+                className={
+                  otherProjects.length === 1
+                    ? "grid grid-cols-1 gap-6"
+                    : "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                }
+              >
+                {otherProjects.map((r) => (
+                  <Link
+                    key={r._id}
+                    className="group p-5 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all flex flex-col justify-between"
+                    href={`/projects/${r.slug}`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono-code text-label-sm">
+                        <span className="text-primary font-bold">{r.status.toUpperCase()}</span>
+                        <span className="text-on-surface-variant">
+                          {formatDate(r.publishedAt ?? r.createdAt)}
+                        </span>
+                      </div>
+                      <h4 className="font-headline-sm text-headline-sm font-semibold text-on-surface group-hover:text-primary transition-colors leading-snug">
+                        {r.name}
+                      </h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                        {r.description}
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-surface-container font-mono-code text-label-sm text-on-surface-variant flex items-center justify-between">
+                      <span>Case Study</span>
+                      <Icon
+                        name="arrow_forward"
+                        size={16}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </footer>
+        )}
       </div>
     </div>
     </>
