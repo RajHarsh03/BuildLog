@@ -37,8 +37,8 @@ export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrows
   return (
     <>
       <div className="pt-4 space-y-3 lg:flex lg:items-center lg:justify-between lg:gap-4 lg:space-y-0">
-        {/* Mobile: tidy 2x2 grid of equal chips; desktop: inline row as before */}
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap items-center" role="tablist">
+        {/* Mobile: one compact nowrap row of chips; desktop: inline row as before */}
+        <div className="flex flex-nowrap items-center gap-1.5 sm:flex-wrap sm:gap-2" role="tablist">
           {FILTERS.map((f) => {
             const active = filter === f.key;
             return (
@@ -49,14 +49,14 @@ export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrows
                 aria-selected={active}
                 onClick={() => setFilter(f.key)}
                 className={cn(
-                  "w-full sm:w-auto px-2 sm:px-4 py-1.5 sm:py-2 font-mono-code text-[11px] sm:text-label-md rounded border-2 border-on-surface transition-all flex items-center justify-center gap-1.5 sm:gap-2",
+                  "w-auto px-2 sm:px-4 py-1.5 sm:py-2 font-mono-code text-[11px] sm:text-label-md rounded border-2 border-on-surface transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap",
                   active
                     ? "bg-on-surface text-surface-container-lowest shadow-[3px_3px_0px_0px_var(--color-ink)]"
                     : "bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-[2px_2px_0px_0px_var(--color-ink)]",
                 )}
               >
                 {f.dot && <span className={cn("w-2 h-2 rounded-full shrink-0", f.dot)} />}
-                <span className="truncate sm:whitespace-nowrap">
+                <span className="sm:whitespace-nowrap">
                   <span className="sm:hidden">{f.short}</span>
                   <span className="hidden sm:inline">{f.label}</span>
                 </span>
