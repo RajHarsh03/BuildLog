@@ -15,8 +15,15 @@ export const projectInputSchema = z.object({
   liveUrl: z.string().url().optional().or(z.literal("")),
   status: projectStatusSchema.default("active"),
   featured: z.boolean().default(false),
-  /** Optional ISO date from the admin form; back-dates publishedAt/createdAt. */
-  publishedAt: z.string().optional(),
+  /** Optional ISO date from the admin form; back-dates publishedAt/createdAt.
+   * Future dates are rejected — the 24h slack lets a "today" noon stamp in
+   * any timezone pass while still blocking real future picks. */
+  publishedAt: z
+    .string()
+    .optional()
+    .refine((v) => !v || new Date(v).getTime() <= Date.now() + 24 * 3600 * 1000, {
+      message: "Publish date cannot be in the future",
+    }),
 });
 
 export type ProjectInput = z.infer<typeof projectInputSchema>;
