@@ -23,8 +23,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <SiteHeader nowBuilding={nowBuilding.name} shipped={nowBuilding.status === "shipped"} />
-      {/* Fixed header (h-20) + compact mobile nav row; offset content accordingly. */}
-      <main className="w-full pt-[132px] md:pt-20 pb-16 bg-background flex-1">{children}</main>
+      {/* Fixed header (h-20) + compact mobile nav row; offset content accordingly.
+          overflow-x-clip ensures no page element can widen the document past
+          the viewport (which would desync viewport-anchored fixed chrome). */}
+      <main className="w-full pt-[132px] md:pt-20 pb-16 bg-background flex-1 overflow-x-clip">{children}</main>
       <SiteFooter />
       <BackToTop />
     </>
