@@ -239,55 +239,40 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* SECTION 4: RECENT PROJECTS - always rendered; when there is nothing
-            beyond the featured spotlight it shows a blank state instead of
-            hiding the whole section. */}
-        <section className="w-full space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 font-mono-code text-xs uppercase tracking-wider text-primary font-bold">
-                <Icon name="handyman" size={16} />
-                <span>Bench to Production</span>
+        {/* SECTION 4: RECENT PROJECTS - only rendered when there is something
+            to list beyond the featured spotlight above. */}
+        {recentProjects.length > 0 && (
+          <section className="w-full space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b-2 border-on-surface">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-mono-code text-xs uppercase tracking-wider text-primary font-bold">
+                  <Icon name="handyman" size={16} />
+                  <span>Bench to Production</span>
+                </div>
+                <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
+                  Recent projects
+                </h2>
+                <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
+                  Things I designed, shipped and maintained - source included.
+                </p>
               </div>
-              <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">
-                Recent projects
-              </h2>
-              <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
-                Things I designed, shipped and maintained - source included.
-              </p>
+              <Link
+                className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
+                href="/projects"
+              >
+                <span>View all projects</span>
+                <Icon name="arrow_forward" size={18} />
+              </Link>
             </div>
-            <Link
-              className="hidden md:inline-flex items-center gap-1.5 font-mono-code text-mono-code font-bold text-on-surface hover:text-primary transition-colors"
-              href="/projects"
-            >
-              <span>View all projects</span>
-              <Icon name="arrow_forward" size={18} />
-            </Link>
-          </div>
-          {recentProjects.length > 0 ? (
-            /* Same 12-col grid as the projects page; span adapts to the card
-               count so 1 fills the row and a pair splits it evenly. */
+            {/* Same 12-col grid as the projects page; span adapts to the card
+                count so 1 fills the row and a pair splits it evenly. */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {recentProjects.map((p) => (
                 <ProjectCard key={p._id} project={p} className={projectSpan} />
               ))}
             </div>
-          ) : allProjects.length === 0 ? (
-            <EmptyState
-              icon="handyman"
-              label="Workbench // quiet"
-              title="No public projects right now"
-              description="Everything in the lab is archived for now. Active and shipped builds will show up here again."
-            />
-          ) : (
-            <EmptyState
-              icon="handyman"
-              label="Workbench // quiet"
-              title="More builds are cooking"
-              description="The spotlight above is my only public project for now - the rest of the bench is still in progress."
-            />
-          )}
-        </section>
+          </section>
+        )}
       </div>
     </div>
   );
