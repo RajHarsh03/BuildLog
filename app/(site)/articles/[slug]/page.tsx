@@ -77,13 +77,23 @@ export default async function ArticlePage({ params }: { params: Params }) {
 
   const [{ content, toc }, related, adjacent] = await Promise.all([
     renderMdx(post.content),
-    getRelatedPosts(post, 3).catch(() => []),
+    // Draw 6 candidates so the journal row can still show 3 after the
+    // prev/next cards claim their posts below.
+    getRelatedPosts(post, 6).catch(() => []),
     getAdjacentPosts(post).catch(() => ({ prev: null, next: null })),
   ]);
 
   const words = wordCount(post.content);
   const url = absoluteUrl(`/articles/${post.slug}`);
   const published = post.publishedAt ?? post.createdAt;
+
+  // A post must never appear twice on this page. Prev/next navigation wins;
+  // "More From The Journal" only shows posts the nav did not claim (and
+  // disappears entirely when nothing is left).
+  const prev = adjacent.prev;
+  const next = adjacent.next;
+  const navIds = new Set([prev?._id, next?._id]);
+  const relatedShown = related.filter((r) => !navIds.has(r._id)).slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -230,35 +240,35 @@ export default async function ArticlePage({ params }: { params: Params }) {
         <Comments postId={post._id} />
 
         {/* Prev / next */}
-        {(adjacent.prev || adjacent.next) && (
+        {(prev || next) && (
           <nav className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {adjacent.prev ? (
+            {prev ? (
               <Link
                 className="group p-5 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all"
-                href={`/articles/${adjacent.prev.slug}`}
+                href={`/articles/${prev.slug}`}
               >
                 <div className="font-mono-code text-label-sm text-on-surface-variant flex items-center gap-1 mb-2">
                   <Icon name="arrow_back" size={14} />
                   Previous
                 </div>
                 <div className="font-headline-sm text-headline-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
-                  {adjacent.prev.title}
+                  {prev.title}
                 </div>
               </Link>
             ) : (
               <span />
             )}
-            {adjacent.next && (
+            {next && (
               <Link
                 className="group p-5 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all sm:text-right"
-                href={`/articles/${adjacent.next.slug}`}
+                href={`/articles/${next.slug}`}
               >
                 <div className="font-mono-code text-label-sm text-on-surface-variant flex items-center gap-1 mb-2 justify-end">
                   Next
                   <Icon name="arrow_forward" size={14} />
                 </div>
                 <div className="font-headline-sm text-headline-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
-                  {adjacent.next.title}
+                  {next.title}
                 </div>
               </Link>
             )}
@@ -267,7 +277,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
 
         {/* Footer: related posts */}
         <footer className="mt-16 pt-12 border-t-2 border-on-surface space-y-12">
-          {related.length > 0 && (
+          {relatedShown.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
@@ -281,14 +291,14 @@ export default async function ArticlePage({ params }: { params: Params }) {
                   fills the row, a pair splits it evenly, 3 use thirds. */}
               <div
                 className={
-                  related.length === 1
+                  relatedShown.length === 1
                     ? "grid grid-cols-1 gap-6"
-                    : related.length === 2
+                    : relatedShown.length === 2
                       ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
                       : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 }
               >
-                {related.map((r) => (
+                {relatedShown.map((r) => (
                   <Link
                     key={r._id}
                     className="group p-5 bg-surface-container-lowest border-2 border-on-surface rounded-lg shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] transition-all flex flex-col justify-between"
