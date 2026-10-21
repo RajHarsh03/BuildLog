@@ -47,7 +47,12 @@ export function PublishDateField({ id, value, onChange, hint }: PublishDateField
           className={cn(inputClass, "flex-1 min-w-0")}
           value={value}
           max={todayInputValue()}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            // `max` only greys the picker; typed dates must be clamped too
+            // (yyyy-MM-dd compares correctly as plain strings).
+            const today = todayInputValue();
+            onChange(e.target.value && e.target.value > today ? today : e.target.value);
+          }}
         />
         <button
           type="button"
@@ -59,7 +64,7 @@ export function PublishDateField({ id, value, onChange, hint }: PublishDateField
         </button>
       </div>
       <p className="font-mono-code text-[11px] text-on-surface-variant mt-1.5">
-        {hint ?? "Back-date a post or pick Today — empty keeps the existing date."}
+        {hint ?? "Back-date a post or pick Today — future dates aren't allowed; empty keeps the existing date."}
       </p>
     </div>
   );
