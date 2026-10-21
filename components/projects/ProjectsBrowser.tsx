@@ -97,11 +97,29 @@ export function ProjectsBrowser({ projects, counts, initialTech }: ProjectsBrows
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 my-10">
-        {visible.length > 0 ? (
-          visible.map((project, i) => (
-            <ProjectCard key={project._id} project={project} featured={i === 0 && filter === "all"} />
-          ))
-        ) : (
+        {visible.length > 0
+          ? (() => {
+          const hasFeatured = filter === "all" && visible.length > 0;
+          const restCount = visible.length - (hasFeatured ? 1 : 0);
+          // Two across; an odd card left alone on the last row takes the full
+          // width instead of leaving a gap beside it.
+          const restSpanFor = (index: number) =>
+            restCount % 2 === 1 && index === visible.length - 1
+              ? "md:col-span-12"
+              : "md:col-span-6";
+          return visible.map((project, i) => {
+            const featuredCard = i === 0 && hasFeatured;
+            return (
+              <ProjectCard
+                key={project._id}
+                project={project}
+                featured={featuredCard}
+                className={featuredCard ? undefined : restSpanFor(i)}
+              />
+            );
+          });
+          })()
+        : (
           <div className="md:col-span-12">
             <EmptyState
               icon="engineering"
