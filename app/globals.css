@@ -233,6 +233,17 @@
   }
 }
 
+/* Active nav pill on the public site. Toggled imperatively from the live
+   browser URL by components/layout/NavLinks.tsx, so it is correct on every
+   route even when the prerendered HTML could not know the path. */
+a.nav-active {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 700;
+  border: 2px solid var(--color-ink);
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+}
+
 @layer utilities {
   /* Share toast: slide-up + fade entrance (CopyLink). */
   .toast-in {

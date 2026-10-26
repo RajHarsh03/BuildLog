@@ -2,94 +2,74 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import clsx from "clsx";
+import { useEffect } from "react";
 
 const LINKS = [
-  { href: "/", label: "Home", match: (p: string) => p === "/" },
-  { href: "/articles", label: "Articles", match: (p: string) => p.startsWith("/articles") },
-  { href: "/projects", label: "Projects", match: (p: string) => p.startsWith("/projects") },
-  { href: "/about", label: "About", match: (p: string) => p.startsWith("/about") },
+  { href: "/", label: "Home" },
+  { href: "/articles", label: "Articles" },
+  { href: "/projects", label: "Projects" },
+  { href: "/about", label: "About" },
 ];
 
 /**
- * Statically prerendered HTML can bake the nav without an active pill (the
- * root route especially, where usePathname is empty during generation), and
- * an effect-only resync was proven not to patch it in production. So on the
- * client the highlight is derived from the LIVE browser URL during render -
- * correct from the very first hydration pass - with a forced re-render on
- * navigation so route changes keep it in sync.
+ * The active pill is applied imperatively from the LIVE browser URL in an
+ * effect, not through render output. Prerendered HTML cannot reliably know
+ * the route (the root page bakes an empty path on Vercel), and React does
+ * not patch className differences it did not cause - so a render-based
+ * highlight silently never appears on the home route. Toggling a CSS class
+ * from the DOM side is correct on every load, regardless of what was baked.
  */
-function useLivePath() {
+function useActiveSync() {
   const pathname = usePathname();
-  const [, forceSync] = useState(0);
-  useEffect(() => forceSync((n) => n + 1), [pathname]);
-  if (typeof window !== "undefined") return window.location.pathname;
-  // During static generation of the root route, usePathname() reports "" -
-  // normalize it to "/" so the prerendered HTML bakes Home as active. Without
-  // this the root page ships with no highlight and hydration does not patch
-  // the className (React keeps the server attribute until the next state
-  // change, which never comes on a plain page load).
-  return pathname === "" ? "/" : pathname;
+  useEffect(() => {
+    const path = window.location.pathname;
+    document.querySelectorAll<HTMLElement>("[data-nav]").forEach((el) => {
+      const href = el.getAttribute("data-nav") ?? "";
+      const on =
+        href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+      el.classList.toggle("nav-active", on);
+      if (on) el.setAttribute("aria-current", "page");
+      else el.removeAttribute("aria-current");
+    });
+  }, [pathname]);
 }
 
+const pillBase =
+  "px-3 py-1 rounded-sm transition-all whitespace-nowrap font-mono-code text-[13px] text-on-surface-variant hover:bg-surface-container hover:text-on-surface";
+
 export function NavLinks() {
-  const current = useLivePath();
+  useActiveSync();
 
   return (
     <nav
       className="hidden md:flex items-center gap-2 p-1 border-2 border-[var(--color-ink)] bg-surface-container-lowest shadow-[2px_2px_0px_0px_var(--color-ink)] rounded-lg"
       aria-label="Main"
     >
-      {LINKS.map((link) => {
-        const active = link.match(current);
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={active ? "page" : undefined}
-            className={clsx(
-              "px-3 py-1 rounded-sm transition-all whitespace-nowrap",
-              active
-                ? "font-mono-code text-[13px] bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0px_0px_var(--color-ink)] border-2 border-[var(--color-ink)]"
-                : "font-mono-code text-[13px] text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-            )}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
+      {LINKS.map((link) => (
+        <Link key={link.href} href={link.href} data-nav={link.href} className={pillBase}>
+          {link.label}
+        </Link>
+      ))}
     </nav>
   );
 }
 
 /** Compact mobile 4-col nav with the same active-page highlight as desktop. */
 export function MobileNavLinks() {
-  const current = useLivePath();
+  useActiveSync();
 
   return (
-    <nav
-      aria-label="Mobile"
-      className="grid grid-cols-4 gap-1.5 font-mono-code text-[12px]"
-    >
-      {LINKS.map((link) => {
-        const active = link.match(current);
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={active ? "page" : undefined}
-            className={clsx(
-              "px-1 py-1 text-center rounded border-2 border-[var(--color-ink)] overflow-hidden text-ellipsis whitespace-nowrap",
-              active
-                ? "bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0px_0px_var(--color-ink)]"
-                : "bg-surface-container-lowest text-on-surface active:bg-surface-container",
-            )}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
+    <nav aria-label="Mobile" className="grid grid-cols-4 gap-1.5 font-mono-code text-[12px]">
+      {LINKS.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          data-nav={link.href}
+          className="px-1 py-1 text-center rounded border-2 border-[var(--color-ink)] bg-surface-container-lowest text-on-surface overflow-hidden text-ellipsis whitespace-nowrap transition-colors"
+        >
+          {link.label}
+        </Link>
+      ))}
     </nav>
   );
 }
