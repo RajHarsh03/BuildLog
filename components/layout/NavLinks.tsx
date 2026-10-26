@@ -25,7 +25,12 @@ function useLivePath() {
   const [, forceSync] = useState(0);
   useEffect(() => forceSync((n) => n + 1), [pathname]);
   if (typeof window !== "undefined") return window.location.pathname;
-  return pathname;
+  // During static generation of the root route, usePathname() reports "" -
+  // normalize it to "/" so the prerendered HTML bakes Home as active. Without
+  // this the root page ships with no highlight and hydration does not patch
+  // the className (React keeps the server attribute until the next state
+  // change, which never comes on a plain page load).
+  return pathname === "" ? "/" : pathname;
 }
 
 export function NavLinks() {
