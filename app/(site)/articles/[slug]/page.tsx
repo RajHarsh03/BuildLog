@@ -225,7 +225,12 @@ export default async function ArticlePage({ params }: { params: Params }) {
                 not a full-bleed banner. */}
             {(post.seoImage || post.coverImage) && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img alt={post.title} src={post.seoImage || post.coverImage} />
+              <img
+                alt={post.title}
+                src={post.seoImage || post.coverImage}
+                loading="lazy"
+                decoding="async"
+              />
             )}
             {content}
           </article>
