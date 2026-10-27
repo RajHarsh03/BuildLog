@@ -6,6 +6,7 @@ import { ArticleCard } from "@/components/blog/ArticleCard";
 import { ArticleFilters } from "@/components/blog/ArticleFilters";
 import { Pagination } from "@/components/blog/Pagination";
 import { RecentlyViewed } from "@/components/blog/RecentlyViewed";
+import { ArticlesSkeleton } from "@/components/blog/ArticlesSkeleton";
 import {
   getPublishedPosts,
   getCategories,
@@ -37,7 +38,19 @@ function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function ArticlesPage({ searchParams }: { searchParams: SearchParams }) {
+export default function ArticlesPage({ searchParams }: { searchParams: SearchParams }) {
+  // The shell renders instantly and the data view suspends inside its own
+  // boundary. This is deliberately NOT a loading.tsx: a parent-segment
+  // loading file also wraps /articles/[slug], which made every
+  // home -> article navigation flash this list skeleton first.
+  return (
+    <Suspense fallback={<ArticlesSkeleton />}>
+      <ArticlesView searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function ArticlesView({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const q = first(sp.q) ?? "";
   const category = first(sp.category) ?? "all";
