@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ProjectsBrowser } from "@/components/projects/ProjectsBrowser";
+import { ProjectsSkeleton } from "@/components/projects/ProjectsSkeleton";
 import { getProjects, getProjectStatusCounts } from "@/lib/content/projects";
 import { absoluteUrl, author } from "@/lib/utils";
 
@@ -27,7 +29,17 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-export default async function ProjectsPage({ searchParams }: { searchParams: SearchParams }) {
+export default function ProjectsPage({ searchParams }: { searchParams: SearchParams }) {
+  // In-page Suspense instead of loading.tsx: a parent loading file wraps
+  // /projects/[slug] too and flashed this list skeleton on detail visits.
+  return (
+    <Suspense fallback={<ProjectsSkeleton />}>
+      <ProjectsView searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function ProjectsView({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const tech = first(sp.tech) ?? "";
   const [projects, counts] = await Promise.all([
