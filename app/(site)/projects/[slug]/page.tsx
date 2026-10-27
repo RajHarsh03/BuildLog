@@ -210,7 +210,12 @@ export default async function ProjectPage({ params }: { params: Params }) {
               {/* Cover sits inside the prose measure so it reads as a figure. */}
               {project.image && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img alt={project.name} src={project.image} />
+                <img
+                  alt={project.name}
+                  src={project.image}
+                  loading="lazy"
+                  decoding="async"
+                />
               )}
               {rendered.content}
             </article>
@@ -223,6 +228,8 @@ export default async function ProjectPage({ params }: { params: Params }) {
                 alt={project.name}
                 className="w-full mb-10 rounded-lg border-2 border-on-surface shadow-[6px_6px_0px_0px_var(--color-ink)]"
                 src={project.image}
+                loading="lazy"
+                decoding="async"
               />
             )}
             <div className="bg-surface-container-lowest border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] rounded-lg p-8 text-center">
