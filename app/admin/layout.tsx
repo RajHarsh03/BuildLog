@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/auth";
 import { requireAdmin } from "@/lib/auth/guard";
 import { AdminNav } from "@/components/admin/AdminNav";
 
@@ -17,14 +16,14 @@ export const metadata: Metadata = {
  * provides the signed-in user to the nav.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const allowed = await requireAdmin();
-  if (!allowed) redirect("/login?error=Unauthorized");
-
-  const session = await auth();
+  // One session read serves both the gate and the nav - a second auth()
+  // call serialized another round-trip in front of every admin navigation.
+  const session = await requireAdmin();
+  if (!session) redirect("/login?error=Unauthorized");
 
   return (
     <div className="min-h-dvh flex flex-col bg-background">
-      <AdminNav userName={session?.user?.name} userImage={session?.user?.image} />
+      <AdminNav userName={session.user?.name} userImage={session.user?.image} />
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </div>
