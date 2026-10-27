@@ -19,14 +19,14 @@ export function GitHubSignInButton() {
         setLoading(true);
         void signIn("github", { callbackUrl: "/admin" });
       }}
-      className="inline-flex items-center justify-center gap-2.5 w-full px-6 py-3.5 bg-on-surface text-surface font-mono-code text-mono-code font-bold uppercase tracking-wider rounded-lg border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+      className="inline-flex items-center justify-center gap-2 sm:gap-2.5 w-full px-4 sm:px-6 py-3 sm:py-3.5 bg-on-surface text-surface font-mono-code text-[11px] sm:text-mono-code font-bold uppercase tracking-wider rounded-lg border-2 border-on-surface shadow-[4px_4px_0px_0px_var(--color-ink)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {loading ? (
-        <Icon name="progress_activity" size={20} className="animate-spin" />
+        <Icon name="progress_activity" size={18} className="animate-spin shrink-0" />
       ) : (
-        <Icon name="key" size={20} />
+        <Icon name="code" size={18} className="shrink-0" />
       )}
-      <span>{loading ? "Redirecting…" : "Sign in with GitHub"}</span>
+      <span className="whitespace-nowrap">{loading ? "Redirecting…" : "Sign in with GitHub"}</span>
     </button>
   );
 }
