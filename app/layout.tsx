@@ -66,7 +66,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-surface font-body-md text-body-md min-h-screen flex flex-col antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+      {/* min-h-dvh, not min-h-screen: mobile browsers count the area behind
+          the URL bar in 100vh, which pushed centered content below the fold. */}
+      <body className="bg-background text-on-surface font-body-md text-body-md min-h-dvh flex flex-col antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
         <ToastProvider>
           {children}
           <SessionWelcome />
