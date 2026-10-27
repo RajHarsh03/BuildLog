@@ -110,7 +110,8 @@ export async function getAllProjectSlugs(): Promise<string[]> {
 
 export async function getAllProjectsAdmin(): Promise<ProjectSummary[]> {
   await dbConnect();
-  const docs = await ProjectModel.find({}).sort({ featured: -1, updatedAt: -1 }).lean();
+  // -content: case-study bodies are large and unused by admin lists.
+  const docs = await ProjectModel.find({}).select("-content").sort({ featured: -1, updatedAt: -1 }).lean();
   return docs.map((d) => toSummary(serializeProject(d as never)));
 }
 

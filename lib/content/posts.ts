@@ -285,7 +285,9 @@ export const getTags = cached(getTagsUncached, ["getTags"], {
 /** Admin: all posts regardless of status, featured first then newest. */
 export async function getAllPostsAdmin(): Promise<PostSummary[]> {
   await dbConnect();
-  const docs = await PostModel.find({}).sort({ featured: -1, updatedAt: -1 }).lean();
+  // -content: admin lists render titles/status, never bodies - pulling every
+  // full MDX string over the wire made admin navigation crawl.
+  const docs = await PostModel.find({}).select("-content").sort({ featured: -1, updatedAt: -1 }).lean();
   return docs.map((d) => toSummary(serializePost(d as never)));
 }
 
