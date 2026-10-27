@@ -378,6 +378,13 @@
   padding: 0.1rem 0.35rem;
   color: var(--color-on-surface);
 }
+/* Wide tables (especially at larger font sizes) scroll inside this wrapper
+   instead of overflowing the viewport - added by the MDX render pipeline. */
+.mdx-content .table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
 .mdx-content table {
   width: 100%;
   border-collapse: collapse;

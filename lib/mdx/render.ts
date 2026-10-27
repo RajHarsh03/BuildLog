@@ -57,6 +57,37 @@ function makeTocPlugin(toc: TocItem[]) {
   };
 }
 
+/** Wrap every <table> in a horizontally scrollable div. Tables cannot shrink
+ * below their min-content width, so at larger reader font sizes a wide table
+ * would otherwise burst out of the viewport. */
+function makeTableWrapPlugin() {
+  return () => (tree: unknown) => {
+    const visit = (node: HastNode) => {
+      if (!node.children) return;
+      const nextChildren: HastNode[] = [];
+      for (const child of node.children) {
+        if (child.type === "element" && child.tagName === "table") {
+          // Recurse INTO the table first (for nested tables), then wrap it.
+          // The fresh wrapper is never re-visited, otherwise the wrap would
+          // recurse onto itself and blow the stack.
+          visit(child);
+          nextChildren.push({
+            type: "element",
+            tagName: "div",
+            properties: { className: ["table-scroll"] },
+            children: [child],
+          });
+        } else {
+          nextChildren.push(child);
+          visit(child);
+        }
+      }
+      node.children = nextChildren;
+    };
+    visit(tree as HastNode);
+  };
+}
+
 /** Compile an MDX string (from the DB) into a React element + table of contents. */
 export async function renderMdx(source: string): Promise<RenderedMdx> {
   const toc: TocItem[] = [];
@@ -73,6 +104,7 @@ export async function renderMdx(source: string): Promise<RenderedMdx> {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
           makeTocPlugin(toc),
+          makeTableWrapPlugin(),
           [
             rehypePrettyCode,
             {
