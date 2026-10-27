@@ -57,9 +57,10 @@ function makeTocPlugin(toc: TocItem[]) {
   };
 }
 
-/** Wrap every <table> in a horizontally scrollable div. Tables cannot shrink
- * below their min-content width, so at larger reader font sizes a wide table
- * would otherwise burst out of the viewport. */
+/** Content hygiene pass: wrap every <table> in a horizontally scrollable
+ * div (tables cannot shrink below min-content and would burst the viewport
+ * at large reader font sizes), and defer every <img> below the fold with
+ * native lazy-loading. */
 function makeTableWrapPlugin() {
   return () => (tree: unknown) => {
     const visit = (node: HastNode) => {
@@ -78,6 +79,9 @@ function makeTableWrapPlugin() {
             children: [child],
           });
         } else {
+          if (child.type === "element" && child.tagName === "img") {
+            child.properties = { loading: "lazy", decoding: "async", ...child.properties };
+          }
           nextChildren.push(child);
           visit(child);
         }
