@@ -7,7 +7,7 @@ import { useToast } from "@/components/shared/Toast";
 import { SIGNED_IN_FLAG } from "@/components/shared/SessionWelcome";
 import { clsx } from "clsx";
 
-/** Signs the admin out, greets with a toast, then lands on the login screen. */
+/** Signs the admin out, greets with a toast, then lands on the public home. */
 export function SignOutButton({
   onSignedOut,
   fullWidth = false,
@@ -35,7 +35,7 @@ export function SignOutButton({
         // redirect:false keeps the SPA alive so the toast survives the trip.
         void signOut({ redirect: false }).then(() => {
           toast("Signed out", "info");
-          router.push("/login");
+          router.push("/");
         });
       }}
       className={clsx(
