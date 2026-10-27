@@ -83,10 +83,6 @@ function ProfileCard({
             <span className="font-bold text-on-surface">{stats.published}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-on-surface-variant">Drafts</span>
-            <span className="font-bold text-on-surface">{stats.drafts}</span>
-          </div>
-          <div className="flex items-center justify-between">
             <span className="text-on-surface-variant">Location</span>
             <span className="font-bold text-on-surface">Kolkata, IN</span>
           </div>
