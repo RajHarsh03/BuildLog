@@ -71,11 +71,12 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
       <div className="flex flex-col w-full space-y-12">
         {/* Archive header */}
         <header className="space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <Breadcrumbs items={[{ label: "Articles" }]} />
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-lowest border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_var(--color-ink)] rounded">
-              <Icon name="history_edu" size={16} className="text-primary" />
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface">
+          <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-4">
+            <Breadcrumbs items={[{ label: "Articles" }]} className="min-w-0" />
+            {/* Compact on mobile: icon-only chip pinned right, full label from sm. */}
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 bg-surface-container-lowest border-2 border-[var(--color-ink)] shadow-[2px_2px_0px_var(--color-ink)] rounded shrink-0">
+              <Icon name="history_edu" size={15} className="text-primary sm:text-base shrink-0" />
+              <span className="hidden sm:inline font-label-sm text-label-sm uppercase tracking-wider text-on-surface whitespace-nowrap">
                 Journal Index
               </span>
             </div>
