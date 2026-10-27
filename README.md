@@ -52,7 +52,7 @@
 - **Slug-first breadcrumbs** — detail pages show the entry's (editable) URL slug, humanised (`my-short-url` → `My Short Url`), in the breadcrumb chip instead of the long title, so it never wraps or cuts mid-sentence.
 - **Projects** — filterable browser at `/projects` (status + tech filters, deep-linkable as `/projects?tech=Next.js`) plus article-like case-study pages: an identical byline bar (author, date, computed reading time + word count, live view count, font-size toggle, share links), cover image, scroll-spy TOC rail with reading-progress meter, author card, comments, a *More From The Workbench* related-projects footer, and Live Demo / GitHub actions (top-right on desktop, full-width on mobile).
 - **About** — author bio, journey timeline, toolbelt, and the featured-build *On The Bench* card (also status-worded), all editable from the CMS.
-- **Skeleton loading** — route-level `loading.tsx` fallbacks for the article/project lists and detail pages.
+- **Skeleton loading** — the article/project detail routes stream behind their own `loading.tsx` fallbacks; the list pages render their shell instantly and stream data inside a page-level `<Suspense>` boundary (a parent-segment `loading.tsx` would also wrap the `[slug]` children and flash the wrong skeleton on home → detail navigation).
 - **Dark mode** — light/dark toggle persisted in `localStorage` (`buildlog-theme`) and applied before first paint; default is light.
 - **Command-palette search** — global search over published posts and projects (**Ctrl/Cmd+K**), backed by the public `/api/search` endpoint.
 - **Toasts** — brutalist ink-bordered confirmations for every action (publish, archive, feature, delete, comment, reply, like, edit, link copy, history clear, sign in/out). Desktop-only (`sm+`); mobile stays clean. A "Signed in as …" greeting fires once per real sign-in, never on browser reopen.
@@ -309,7 +309,7 @@ BuildLog/
 ### Auth & Admin
 | Route | Purpose |
 | ----- | ------- |
-| `/login` | GitHub OAuth sign-in |
+| `/login` | GitHub OAuth sign-in (terminal-styled card) |
 | `/admin` | Dashboard: stats, recent posts, quick actions |
 | `/admin/posts`, `/admin/posts/new`, `/admin/posts/[id]/edit` | Post management |
 | `/admin/projects`, `/admin/projects/new`, `/admin/projects/[id]/edit` | Project management |
@@ -350,7 +350,7 @@ Unauthenticated calls to the admin-only API routes receive `401 Unauthorized`; i
 6. **About**: bio text, journey milestones (year/title/description), and the skills grid — edited as a single document.
 7. **Comments**: switch between the **Posts** and **Projects** tabs, expand an entry's accordion to see its threads (newest activity first); like once, reply once, edit your replies via the ⋮ menu, or trash a whole thread. Every mutation toasts and updates the counts instantly.
 8. Row actions on the list pages let you publish/unpublish, feature, and delete (with two-step confirm) without opening the editor.
-9. Sign out from the admin top bar.
+9. Sign out from the admin top bar — you land back on the public home, not the login screen.
 
 Draft-safety is always on while editing: forms autosave locally, and leaving an unsaved form through the admin nav offers to persist a real draft to the CMS before navigating away.
 
@@ -365,6 +365,7 @@ Article and project bodies are stored as **MDX strings in MongoDB** and compiled
 - `remark-gfm` — tables, task lists, strikethrough.
 - `rehype-pretty-code` (Shiki, dual `github-light` / `github-dark` themes, transparent background) — tokenized code blocks styled by the neo-brutalist `.code-block` terminal chrome with a copy button. The correct theme swaps automatically via CSS when dark mode is active, with no re-render.
 - A custom rehype plugin assigns **heading ids with the app's own `slugify`** and collects the **table of contents** in the same pass, guaranteeing TOC anchors always match rendered headings. The TOC renders its own `01/02` index and strips any manual leading numbering (`1.`, `2)`) from the displayed heading text — ids keep the full text, so anchors never break.
+- Tables are wrapped in a horizontally **scrollable container** by the same pipeline, so a wide table (or a reader who bumps the font size up) scrolls inside its card instead of bursting out of the viewport.
 
 Supported markdown in the editor: headings, paragraphs, GFM tables, fenced code with language tags, blockquotes, ordered/unordered lists, links, images, bold/italic/inline code.
 
