@@ -3,11 +3,11 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { BackToTop } from "@/components/shared/BackToTop";
 import { getFeaturedProject } from "@/lib/content/projects";
 
-// The nav's active-page highlight depends on the real request URL. Vercel's
-// build-time prerender of "/" bakes it as inactive (usePathname is unreliable
-// during static generation), so render the shell per-request. Data reads stay
-// fast: content helpers are unstable_cache'd and the footer/header are cheap.
-export const dynamic = "force-dynamic";
+// The nav's active-page highlight is resolved client-side after hydration
+// (NavLinks' useLivePath), so the shell no longer needs to defeat caching.
+// Pages under this layout are static/ISR again (`revalidate = 60`) and every
+// CMS mutation still busts them instantly via revalidateTag - the header
+// chip's getFeaturedProject read is tagged "projects" and re-renders with it.
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   // Header chip spotlights the featured project; wording follows its status
