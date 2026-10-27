@@ -13,15 +13,19 @@ const LINKS = [
 ];
 
 /**
- * Statically rendered (ISR) pages bake usePathname as "/" in the prerendered
- * HTML, so the first-paint highlight can be wrong on the deployed site.
- * Re-read the real browser URL after mount and keep it synced on navigation.
+ * Statically prerendered HTML can bake the nav without an active pill (the
+ * root route especially, where usePathname is empty during generation), and
+ * an effect-only resync was proven not to patch it in production. So on the
+ * client the highlight is derived from the LIVE browser URL during render -
+ * correct from the very first hydration pass - with a forced re-render on
+ * navigation so route changes keep it in sync.
  */
 function useLivePath() {
   const pathname = usePathname();
-  const [clientPath, setClientPath] = useState<string | null>(null);
-  useEffect(() => setClientPath(window.location.pathname), [pathname]);
-  return clientPath ?? pathname;
+  const [, forceSync] = useState(0);
+  useEffect(() => forceSync((n) => n + 1), [pathname]);
+  if (typeof window !== "undefined") return window.location.pathname;
+  return pathname;
 }
 
 export function NavLinks() {
